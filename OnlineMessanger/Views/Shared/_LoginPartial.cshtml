@@ -1,0 +1,26 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+<ul class="navbar-nav">
+@if (User.Identity.IsAuthenticated)
+{
+    <li class="nav-item">
+        <a id="manage" class="nav-link text-dark" asp-controller="Home" asp-action="Index" title="Manage"><b>Hello @User.FindFirstValue(ClaimTypes.Email)!</b></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" id="register" asp-controller="Home" asp-action="Logout"><b>Logout</b></a>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" id="register" asp-controller="Home" asp-action="Register"><b>Register</b></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" id="login" asp-controller="Home" asp-action="Login"><b>Login</b></a>
+    </li>
+}
+</ul>

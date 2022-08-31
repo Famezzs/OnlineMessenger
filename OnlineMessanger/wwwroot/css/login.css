@@ -1,0 +1,50 @@
+﻿.login-form {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid #aaaaaa;
+    border-radius: 10px;
+    width: 350px;
+    padding: 20px;
+}
+
+.login-form-fields {
+    display: table;
+}
+
+.login-form button {
+    display: block;
+    width: 150px;
+    margin: 30px auto auto auto;
+    border: 1px solid black;
+    border-radius: 3px;
+}
+
+.login-form p {
+    display: inline;
+}
+
+    .login-field p {
+        float: left;
+        margin: 5px 0;
+        padding-right: 15px;
+    }
+
+    .login-field input {
+        float: right;
+        margin: 5px 0;
+    }
+
+    .login-field {
+        clear: both;
+    }
+
+.login-error-message {
+    background-color: #bd0000;
+    color: white;
+    margin-top: 20px;
+    border-radius: 3px;
+    padding: 5px;
+    text-align: center;
+}
