@@ -50,9 +50,11 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-TokenCredentials.GetInstance(key: builder.Configuration["JWT:Secret"],
+_ = TokenCredentials.GetInstance(key: builder.Configuration["JWT:Secret"],
             issuer: builder.Configuration["JWT:ValidIssuer"],
             audience: builder.Configuration["JWT:ValidAudience"]);
+
+_ = ConnectionStrings.GetInstance(builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var app = builder.Build();
 

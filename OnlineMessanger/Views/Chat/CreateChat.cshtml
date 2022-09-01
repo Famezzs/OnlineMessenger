@@ -1,21 +1,17 @@
-﻿@model Register
-@{
-    ViewData["Title"] = "Register";
+﻿@{
+    ViewData["Title"] = "Create Chat";
 }
 
-@using (Html.BeginForm("Register", "Authenticate", FormMethod.Post))
+@model Chat
+
+@using (Html.BeginForm("CreateChat", "Chat", FormMethod.Post))
 {
     <div class="universal-form">
 
         <div class="universal-form-fields">
             <div class="universal-field">
-                <p>Email</p>
-                @Html.TextBoxFor(model => model.Email)
-            </div>
-
-            <div class="universal-field">
-                <p>Password</p>
-                @Html.TextBoxFor(model => model.Password)
+                <p>Other person's email</p>
+                @Html.TextBoxFor(model => model.ParticipantBId)
             </div>
         </div>
 

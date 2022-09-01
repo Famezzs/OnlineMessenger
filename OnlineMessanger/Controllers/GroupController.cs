@@ -1,22 +1,40 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+
+using System.Security.Claims;
 
 using OnlineMessanger.Services;
+using OnlineMessanger.Models;
 
 namespace OnlineMessanger.Controllers
 {
     public class GroupController : Controller
     {
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var token = HttpContext.Session.GetString("Token");
 
-            if (new TokenService().IsTokenValid(token))
+            if (!new TokenService().IsTokenValid(token))
             {
-                return View();
+                return RedirectToAction("Login", "Home");
+                
             }
 
-            return RedirectToAction("Login", "Home");
+            _userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            _userGroups = await new GroupService(_context!).GetGroupsByUserId(_userId);
+
+            return View();
         }
+
+        public GroupController(MessangerDataContext context)
+        {
+            _context = context;
+        }
+
+        private static string? _userId;
+
+        private static List<Group>? _userGroups;
+
+        private static MessangerDataContext? _context;
     }
 }

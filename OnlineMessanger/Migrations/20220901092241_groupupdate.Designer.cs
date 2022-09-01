@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OnlineMessanger.Models;
 
@@ -11,9 +12,10 @@ using OnlineMessanger.Models;
 namespace OnlineMessanger.Migrations
 {
     [DbContext(typeof(MessangerDataContext))]
-    partial class MessangerDataContextModelSnapshot : ModelSnapshot
+    [Migration("20220901092241_groupupdate")]
+    partial class groupupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,24 +157,6 @@ namespace OnlineMessanger.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("OnlineMessanger.Models.Chat", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ParticipantAId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ParticipantBId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Chats");
-                });
-
             modelBuilder.Entity("OnlineMessanger.Models.Group", b =>
                 {
                     b.Property<string>("Id")
@@ -204,18 +188,14 @@ namespace OnlineMessanger.Migrations
 
             modelBuilder.Entity("OnlineMessanger.Models.GroupMember", b =>
                 {
-                    b.Property<string>("InvitationId")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("GroupId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("InvitationId");
+                    b.HasKey("UserId");
 
                     b.ToTable("GroupMembers");
                 });

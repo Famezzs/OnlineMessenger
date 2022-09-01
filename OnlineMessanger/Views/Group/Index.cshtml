@@ -1,0 +1,17 @@
+﻿@{
+    ViewData["Title"] = "Groups";
+}
+
+@model List<Group>
+
+@if (Model != null)
+{
+    @foreach (var group in Model)
+    {
+
+    }
+}
+
+<span>
+    <button asp-action="CreateChat" asp-controller="Chat">Create a chat</button>
+</span>

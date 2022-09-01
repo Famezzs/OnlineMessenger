@@ -1,19 +1,20 @@
-﻿@model Login
-@{
+﻿@{
     ViewData["Title"] = "Login";
 }
 
+@model Login
+
 @using (Html.BeginForm("Login", "Authenticate", FormMethod.Post))
 {
-    <div class="login-form">
+    <div class="universal-form">
 
-        <div class="login-form-fields">
-            <div class="login-field">
+        <div class="universal-form-fields">
+            <div class="universal-field">
                 <p>Email</p>
                 @Html.TextBoxFor(model => model.Email)
             </div>
 
-            <div class="login-field">
+            <div class="universal-field">
                 <p>Password</p>
                 @Html.TextBoxFor(model => model.Password)
             </div>
@@ -23,7 +24,7 @@
 
         @if(TempData["Error"] != null)
         {
-            <div class="login-error-message">
+            <div class="universal-error-message">
                 @TempData["Error"]
             </div>
         }

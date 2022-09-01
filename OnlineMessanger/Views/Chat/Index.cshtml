@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Chats";
+}
+
+@model List<ChatRepresentation>
+@if (Model != null)
+{
+   @foreach (var chat in Model)
+    {
+    <div>
+        <b>Chat name: @chat.Name</b>
+    </div>
+    } 
+}

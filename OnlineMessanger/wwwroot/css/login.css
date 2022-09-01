@@ -1,4 +1,4 @@
-﻿.login-form {
+﻿.universal-form {
     position: absolute;
     left: 50%;
     top: 50%;
@@ -9,11 +9,11 @@
     padding: 20px;
 }
 
-.login-form-fields {
+.universal-form-fields {
     display: table;
 }
 
-.login-form button {
+.universal-form button {
     display: block;
     width: 150px;
     margin: 30px auto auto auto;
@@ -21,26 +21,26 @@
     border-radius: 3px;
 }
 
-.login-form p {
+.universal-form p {
     display: inline;
 }
 
-    .login-field p {
+    .universal-field p {
         float: left;
         margin: 5px 0;
         padding-right: 15px;
     }
 
-    .login-field input {
+    .universal-field input {
         float: right;
         margin: 5px 0;
     }
 
-    .login-field {
+    .universal-field {
         clear: both;
     }
 
-.login-error-message {
+.universal-error-message {
     background-color: #bd0000;
     color: white;
     margin-top: 20px;
