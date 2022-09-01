@@ -20,7 +20,7 @@ namespace OnlineMessanger.Controllers
 
             _userChats = await new ChatService(_context!).GetChatsByUserId(_userId);
 
-            return View();
+            return View(_userChats);
         }
 
         public IActionResult CreateChatForm()
@@ -34,14 +34,57 @@ namespace OnlineMessanger.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateChat([FromForm] Chat model)
+        public async Task<IActionResult> CreateChat([FromForm] Chat model)
         {
             if (!ValidateSession())
             {
                 return RedirectIfUnauthorized();
             }
 
-            var otherUser = await _context.FindAsync()
+            var otherUser = await new UserService().FindUserByEmail(model.ParticipantBId);
+
+            if (otherUser == null)
+            {
+                TempData["Error"] = "No such user exists.";
+
+                return RedirectToAction("CreateChatForm", "Chat");
+            }
+
+            if (otherUser.Id == _userId)
+            {
+                TempData["Error"] = "Cannot create a chat with oneself.";
+
+                return RedirectToAction("CreateChatForm", "Chat");
+            }
+
+            model.ParticipantAId = _userId!;
+
+            model.ParticipantBId = otherUser.Id;
+
+            bool isChatUnique = await new ChatService(_context!).IsUnique(model.ParticipantAId, model.ParticipantBId);
+
+            if (!isChatUnique)
+            {
+                TempData["Error"] = "Chat already exists.";
+
+                return RedirectToAction("CreateChatForm", "Chat");
+            }
+
+            await _context!.Chats!.AddAsync(model);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Chat");
+        }
+
+        public async Task<IActionResult> ViewChat(string chatId)
+        {
+            if (!ValidateSession())
+            {
+                return RedirectIfUnauthorized();
+            }
+
+
         }
 
         private bool ValidateSession()

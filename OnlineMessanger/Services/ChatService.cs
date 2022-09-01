@@ -2,6 +2,7 @@
 
 using OnlineMessanger.Helpers;
 using OnlineMessanger.Models;
+using OnlineMessanger.Services.Interfaces;
 
 namespace OnlineMessanger.Services
 {
@@ -39,9 +40,9 @@ namespace OnlineMessanger.Services
                     }
                     else
                     {
-                        var user = await context.Users.FindAsync(userId);
+                        var secondUser = await context.Users.FindAsync(participantAId);
 
-                        chatName = user!.Email;
+                        chatName = secondUser!.Email;
                     }
 
                     chats.Add(new ChatRepresentation(chatId, chatName));
@@ -50,6 +51,28 @@ namespace OnlineMessanger.Services
 
             return chats;
         }
+
+        public async Task<bool> IsUnique(string firstUserId, string secondUserId)
+        {
+            using (var sqlConnection = new SqlConnection(ConnectionStrings.GetSqlConnectionString()))
+            {
+                await sqlConnection.OpenAsync();
+
+                using var sqlCommand = new SqlCommand($"SELECT Id FROM dbo.Chats WHERE ParticipantAId='{firstUserId}' AND ParticipantBId='{secondUserId}'" +
+                                    $"OR ParticipantAId='{secondUserId}' AND ParticipantBId='{firstUserId}'", sqlConnection);
+
+                using var reader = await sqlCommand.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+
 
         public ChatService(MessangerDataContext context)
         {

@@ -1,6 +1,6 @@
 ﻿using OnlineMessanger.Models;
 
-namespace OnlineMessanger.Services
+namespace OnlineMessanger.Services.Interfaces
 {
     public interface ITokenService
     {

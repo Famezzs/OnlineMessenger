@@ -3,12 +3,25 @@
 }
 
 @model List<ChatRepresentation>
+
 @if (Model != null)
 {
-   @foreach (var chat in Model)
+    @foreach (var chat in Model)
     {
-    <div>
-        <b>Chat name: @chat.Name</b>
+        <div class="item" title="@chat.Name">
+            <img src="~/css/icons/default-chat-icon.png"
+         id=@chat.Id runat="server"
+         style="width: 100px; height: 100px;" onclick="test(event)" />
+            <span class="caption">@chat.Name</span>
+        </div>
+    }
+
+    <div class="item" title="New Chat">
+        <img src="~/css/icons/add-chat-icon.png" runat="server"
+         style="width: 100px; height: 100px;" onclick="redirectToChatCreate()" />
+        <span class="caption">Add Chat</span>
     </div>
-    } 
 }
+
+<script src="~/js/chat.js"></script>
+

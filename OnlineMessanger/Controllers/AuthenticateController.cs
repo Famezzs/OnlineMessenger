@@ -17,6 +17,13 @@ namespace OnlineMessanger.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromForm] Login model)
         {
+            if (String.IsNullOrWhiteSpace(model.Email) ||
+                String.IsNullOrWhiteSpace(model.Password))
+            {
+                TempData["Error"] = "Please fill in the fields";
+                return RedirectToAction("Login", "Home");
+            }
+
             var user = await userManager.FindByNameAsync(model.Email);
 
             var isAuthenticationAttemptValid = user != null && await userManager.CheckPasswordAsync(user, model.Password);
@@ -44,6 +51,13 @@ namespace OnlineMessanger.Controllers
         [Route("register")]
         public async Task<IActionResult> Register([FromForm] Register model)
         {
+            if (String.IsNullOrWhiteSpace(model.Email) ||
+                String.IsNullOrWhiteSpace(model.Password))
+            {
+                TempData["Error"] = "Please fill in the fields";
+                return RedirectToAction("Register", "Home");
+            }
+
             var applicationUser = new User()
             {
                 Email = model.Email,
