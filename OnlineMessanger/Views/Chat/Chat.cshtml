@@ -1,0 +1,26 @@
+﻿@model List<Message>
+
+@if (Model != null)
+{
+    foreach (var message in Model)
+    {
+        <div>
+            <b>@message.Created</b>
+            @if (message.IsEdited == true)
+            {
+                <b> Edited</b>
+            }
+            <p>
+                @message.Contents
+            </p>
+        </div>
+    }
+}
+
+@using (Html.BeginForm("SendMessage", "Chat"))
+{
+    <div class="message-menu">
+        <input type="text" placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"/>
+        <input type="submit" value="Message" title="Send" />
+    </div>
+}

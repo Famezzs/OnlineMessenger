@@ -77,14 +77,40 @@ namespace OnlineMessanger.Controllers
             return RedirectToAction("Index", "Chat");
         }
 
-        public async Task<IActionResult> ViewChat(string chatId)
+        public async Task<IActionResult> ViewChat()
         {
+            var chatId = HttpContext.Session.GetString("ChatId");
+
+            if (String.IsNullOrWhiteSpace(chatId))
+            {
+                return RedirectIfUnauthorized();
+            }
+
             if (!ValidateSession())
             {
                 return RedirectIfUnauthorized();
             }
 
+            var doesUserHaveAccessToChat = await new ChatService(_context!).HasAccessToChat(_userId!, chatId);
 
+            if (!doesUserHaveAccessToChat)
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var messages = await new ChatService(_context!).GetMessagesByChatId(chatId, _messageLimit, _messageOffset);
+
+            _chatMessages.AddRange(messages);
+
+            _messageOffset += _messageLimit;
+
+            return View("Chat", _chatMessages);
+        }
+
+        [HttpPost]
+        public void SetChatId(string chatId)
+        {
+            HttpContext.Session.SetString("ChatId", chatId);
         }
 
         private bool ValidateSession()
@@ -108,6 +134,12 @@ namespace OnlineMessanger.Controllers
 
         private static List<ChatRepresentation>? _userChats;
 
+        private static List<Message> _chatMessages = new List<Message>();
+
         private static MessangerDataContext? _context;
+
+        private static int _messageOffset = 0;
+
+        private static int _messageLimit = 20;
     }
 }

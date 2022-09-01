@@ -2,13 +2,13 @@
 {
     public class ChatRepresentation
     {
-        public string Id { get; set; }
         public string Name { get; set; }
+        public Chat Chat { get; set; }
 
-        public ChatRepresentation(string id, string name)
+        public ChatRepresentation(string name, Chat chat)
         {
-            Id = id;
             Name = name;
+            Chat = chat;
         }
     }
 }

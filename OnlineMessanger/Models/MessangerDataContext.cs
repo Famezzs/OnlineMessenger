@@ -31,9 +31,11 @@ namespace OnlineMessanger.Models
 
         public DbSet<Group>? Groups { get; set; }
 
+        public DbSet<GroupMember>? GroupMembers { get; set; }
+        
         public DbSet<Chat>? Chats { get; set; }
 
-        public DbSet<GroupMember>? GroupMembers { get; set; }
+        public DbSet<Message>? Messages { get; set; }
 
         private IConfiguration configuration;
     }

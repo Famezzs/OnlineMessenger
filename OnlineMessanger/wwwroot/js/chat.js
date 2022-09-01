@@ -1,8 +1,9 @@
-﻿
-function test(event) {
-    console.log(event.target.id);
+﻿function redirectToChatCreate() {
+    window.location.href = window.location.href + '/CreateChatForm'
 }
 
-function redirectToChatCreate() {
-    window.location.href = window.location.href + '/CreateChatForm'
+function setChatId(chatId) {
+    $.ajax({
+        url: '@Url.Action("GetLinkHandler","Storage")'
+    }).done(function (e)
 }

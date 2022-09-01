@@ -7,13 +7,13 @@ namespace OnlineMessanger.Services
 {
     public class QueryService : IQueryService
     {
-        public async Task<SqlDataReader> Select(string fields, string source, string condition)
+        public async Task<SqlDataReader> Select(string fields, string source, string condition, string additionalOptions = "")
         {
             sqlConnection = new SqlConnection(ConnectionStrings.GetSqlConnectionString());
 
             await sqlConnection.OpenAsync();
 
-            sqlCommand = new SqlCommand($"SELECT {fields} FROM {source} WHERE {condition}", sqlConnection);
+            sqlCommand = new SqlCommand($"SELECT {fields} FROM {source} WHERE {condition} {additionalOptions}", sqlConnection);
 
             sqlReader = await sqlCommand.ExecuteReaderAsync();
 

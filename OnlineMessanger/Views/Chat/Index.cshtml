@@ -10,8 +10,8 @@
     {
         <div class="item" title="@chat.Name">
             <img src="~/css/icons/default-chat-icon.png"
-         id=@chat.Id runat="server"
-         style="width: 100px; height: 100px;" onclick="test(event)" />
+         id=@chat.Chat.Id runat="server"
+         style="width: 100px; height: 100px;" onclick="setChatId('@chat.Chat.Id')" />
             <span class="caption">@chat.Name</span>
         </div>
     }
@@ -23,5 +23,20 @@
     </div>
 }
 
-<script src="~/js/chat.js"></script>
+<script>
+    function redirectToChatCreate() {
+        window.location.href = window.location.href + '/CreateChatForm'
+    }
 
+    function setChatId(chatId) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetChatId","Chat")',
+            data: {
+                'chatId': chatId
+            }
+        }).done(function(e) {
+            window.location.href = window.location.href + '/ViewChat'
+        })
+    }
+</script>
