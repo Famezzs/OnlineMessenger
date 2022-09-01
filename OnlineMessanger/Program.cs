@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
+using OnlineMessanger.Helpers;
 using OnlineMessanger.Models;
 
 using System.Text;
@@ -49,6 +49,10 @@ builder.Services.AddAuthentication(options =>
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
         };
     });
+
+TokenCredentials.GetInstance(key: builder.Configuration["JWT:Secret"],
+            issuer: builder.Configuration["JWT:ValidIssuer"],
+            audience: builder.Configuration["JWT:ValidAudience"]);
 
 var app = builder.Build();
 

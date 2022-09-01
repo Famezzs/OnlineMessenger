@@ -1,14 +1,12 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 using OnlineMessanger.Helpers;
 using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Models;
+using OnlineMessanger.Services;
 
 namespace OnlineMessanger.Controllers
 {
@@ -31,22 +29,11 @@ namespace OnlineMessanger.Controllers
 
             var userRoles = await userManager.GetRolesAsync(user!);
 
-            var authenticationClaims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.Email, user!.Email),
-                new Claim(ClaimTypes.Name, user!.UserName),
-                new Claim(ClaimTypes.NameIdentifier, user!.Id)
-            };
+            var tokenService = new TokenService();
 
-            foreach (var userRole in userRoles)
-            {
-                authenticationClaims.Add(new Claim(ClaimTypes.Role, userRole));
-            }
+            var securityToken = tokenService.CreateToken(user!, userRoles, DateTime.Now.AddHours(1));
 
-            var securityToken = GenerateSecurityToken
-                .Generate(authenticationClaims, _configuration);
-
-            HttpContext.Session.SetString("Token", new JwtSecurityTokenHandler().WriteToken(securityToken));
+            HttpContext.Session.SetString("Token", securityToken);
 
             await signInManager.PasswordSignInAsync(model.Email, model.Password, true, false);
 

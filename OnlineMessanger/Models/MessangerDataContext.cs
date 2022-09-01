@@ -29,6 +29,8 @@ namespace OnlineMessanger.Models
             base.OnModelCreating(modelBuilder);
         }
 
+        public DbSet<Group>? Groups { get; set; }
+
         private IConfiguration configuration;
     }
 }
