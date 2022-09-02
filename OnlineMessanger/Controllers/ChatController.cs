@@ -125,32 +125,16 @@ namespace OnlineMessanger.Controllers
             return View("Chat", _chatMessages);
         }
 
-        //public async Task<IActionResult> LoadNewMessages(int messageLimit, int messageOffset = 0)
-        //{
-        //    var chatId = HttpContext.Session.GetString("ChatId");
-
-        //    var messages = await new ChatService(_context!).GetMessagesByChatId(chatId!, messageLimit, messageOffset);
-
-        //    if (_chatMessages == null)
-        //    {
-        //        _chatMessages = new List<MessageRepresentation>();
-        //    }
-
-        //    messages.AddRange(_chatMessages);
-
-        //    _chatMessages = messages;
-
-        //    _defaultMessageOffset += messages.Count;
-
-        //    return View("Chat", _chatMessages);
-        //}
-
         [HttpPost]
         public async Task DeleteMessage(string messageId)
         {
             await new ChatService(_context!).DeleteMessage(_userId!, messageId);
+        }
 
-            //return await LoadNewMessages(_chatMessages!.Count - 1);
+        [HttpPost]
+        public async Task DeleteMessageForSelf(string messageId)
+        {
+            await new ChatService(_context!).DeleteMessageForSelf(_userId!, messageId);
         }
 
         [HttpPost]

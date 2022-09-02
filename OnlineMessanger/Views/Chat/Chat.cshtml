@@ -20,7 +20,8 @@
     <ul style="list-style-type: none">
         @foreach (var message in Model)
         {
-            @if (message.Message.IsDeletedForSelf)
+            @if (message.Message.IsDeletedForSelf && 
+                message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 continue;
             }
@@ -68,6 +69,7 @@
     <div class="message-menu">
         <input type="text" placeholder="Enter your message" value="@ViewData["Message"]" name="messageString" />
         <input type="submit" value="Send" title="Send" onclick="saveScroll()" />
+        <button type="button" class="refresh-button" onclick="refreshMessages()">Refresh</button>
     </div>
 }
 
@@ -80,6 +82,8 @@
     const contextMenu = document.querySelector('.context-menu');
 
     const deleteForAllButton = document.querySelector('.context-menu__delforevrbtn');
+
+    const deleteForSelfButton = document.querySelector('.context-menu__delbtn');
 
     function saveScroll() {
         window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
@@ -112,6 +116,10 @@
         currentMessageId = event.target.id;
     }
 
+    function refreshMessages() {
+        window.location = '@Url.Action("ViewChat","Chat")';
+    }
+
     window.addEventListener('contextmenu', (event) => {
         event.preventDefault();
     });
@@ -131,8 +139,23 @@
                 'messageId': currentMessageId
             }
         }).done(() => {
-            window.location = '@Url.Action("ViewChat","Chat")';
+            refreshMessages();
         });
     });
+
+    deleteForSelfButton.addEventListener('click', () => {
+
+        saveScroll();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DeleteMessageForSelf","Chat")',
+            data: {
+                'messageId': currentMessageId
+            }
+        }).done(() => {
+            refreshMessages();
+        });
+    })
 
 </script>

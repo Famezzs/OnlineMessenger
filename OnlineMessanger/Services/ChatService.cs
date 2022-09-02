@@ -169,6 +169,27 @@ namespace OnlineMessanger.Services
             await context.SaveChangesAsync();
         }
 
+        public async Task DeleteMessageForSelf(string userId, string messageId)
+        {
+            if (!await IsOwnerOfMessage(userId, messageId))
+            {
+                return;
+            }
+
+            var message = context!.Messages!.Find(messageId);
+
+            if (message == null)
+            {
+                return;
+            }
+
+            message.IsDeletedForSelf = true;
+
+            context.Update(message);
+
+            await context.SaveChangesAsync();
+        }
+
         public ChatService(MessangerDataContext context)
         {
             this.context = context;
