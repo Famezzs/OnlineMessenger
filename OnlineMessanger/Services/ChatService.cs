@@ -52,7 +52,7 @@ namespace OnlineMessanger.Services
         {
             var messages = new List<MessageRepresentation>();
 
-            var fields = $"Id, OwnerId, ChannelId, Contents, Created, IsEdited";
+            var fields = $"Id, OwnerId, ChannelId, Contents, Created, IsEdited, IsDeletedForSelf";
 
             var source = "dbo.Messages";
 
@@ -78,7 +78,9 @@ namespace OnlineMessanger.Services
 
                 var isEdited = (bool)sqlReader["IsEdited"];
 
-                var message = new Message(id, ownerId, channelId, contents, createdOn, isEdited);
+                var isDeletedForSelf = (bool)sqlReader["IsDeletedForSelf"];
+
+                var message = new Message(id, ownerId, channelId, contents, createdOn, isEdited, isDeletedForSelf);
 
                 var author = await context.Users.FindAsync(ownerId);
 
@@ -127,6 +129,44 @@ namespace OnlineMessanger.Services
             }
 
             return true;
+        }
+
+        public async Task<bool> IsOwnerOfMessage(string userId, string messageId)
+        {
+            var user = await context.Users.FindAsync(userId);
+
+            var message = await context.Messages!.FindAsync(messageId);
+
+            if (user == null || message == null)
+            {
+                return false;
+            }
+
+            if (user.Id != message.OwnerId)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task DeleteMessage(string userId, string messageId)
+        {
+            if (!await IsOwnerOfMessage(userId, messageId))
+            {
+                return;
+            }
+
+            var message = context!.Messages!.Find(messageId);
+
+            if (message == null)
+            {
+                return;
+            }
+
+            context.Messages.Remove(message);
+
+            await context.SaveChangesAsync();
         }
 
         public ChatService(MessangerDataContext context)

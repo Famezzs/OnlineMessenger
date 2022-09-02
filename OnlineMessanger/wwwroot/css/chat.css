@@ -24,3 +24,54 @@
     display: flex;
     justify-content: center;
 }
+
+.message-item {
+    padding: 10px;
+    border: 2px solid grey;
+    border-radius: 10px;
+    margin: 15px;
+}
+
+.context-menu {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+    width: 200px;
+}
+
+.context-menu__editbtn {
+    cursor: pointer;
+    padding: 8px 15px;
+}
+
+    .context-menu__editbtn:hover {
+        background-color: #f8f8f8;
+    }
+
+.context-menu__delbtn {
+    cursor: pointer;
+    padding: 8px 15px;
+}
+
+    .context-menu__delbtn:hover {
+        background-color: #f8f8f8;
+    }
+
+.context-menu__delforevrbtn {
+    cursor: pointer;
+    padding: 8px 15px;
+}
+
+    .context-menu__delforevrbtn:hover {
+        background-color: #f8f8f8;
+    }
+
+.context-menu__divider {
+    border-bottom: 1px solid #eeeeee;
+    margin: 10px 0;
+}

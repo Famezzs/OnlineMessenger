@@ -8,6 +8,7 @@
         public string Contents { get; set; }
         public DateTime Created { get; set; }
         public bool IsEdited { get; set; }
+        public bool IsDeletedForSelf { get; set; }
 
         public Message()
         {
@@ -16,7 +17,7 @@
             Contents = string.Empty;
         }
 
-        public Message(string id, string ownerId, string channelId, string contents, DateTime created, bool isEdited = false)
+        public Message(string id, string ownerId, string channelId, string contents, DateTime created, bool isEdited = false, bool isDeletedForSelf = false)
         {
             Id = id;
             OwnerId = ownerId;
@@ -24,15 +25,17 @@
             Contents = contents;
             Created = created;
             IsEdited = isEdited;
+            IsDeletedForSelf = isDeletedForSelf;
         }
 
-        public Message(string ownerId, string channelId, string contents, DateTime created, bool isEdited = false)
+        public Message(string ownerId, string channelId, string contents, DateTime created, bool isEdited = false, bool isDeletedForSelf = false)
         {
             OwnerId = ownerId;
             ChannelId = channelId;
             Contents = contents;
             Created = created;
             IsEdited = isEdited;
+            IsDeletedForSelf = isDeletedForSelf;
         }
     }
 }

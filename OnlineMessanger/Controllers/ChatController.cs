@@ -100,7 +100,7 @@ namespace OnlineMessanger.Controllers
 
             _chatMessages = null;
 
-            _messageOffset = 0;
+            _defaultMessageOffset = 0;
 
             return await LoadNewMessages();
         }
@@ -109,7 +109,7 @@ namespace OnlineMessanger.Controllers
         {
             var chatId = HttpContext.Session.GetString("ChatId");
 
-            var messages = await new ChatService(_context!).GetMessagesByChatId(chatId!, _messageLimit, _messageOffset);
+            var messages = await new ChatService(_context!).GetMessagesByChatId(chatId!, _defaultMessageLimit, _defaultMessageOffset); 
 
             if (_chatMessages == null)
             {
@@ -120,9 +120,37 @@ namespace OnlineMessanger.Controllers
 
             _chatMessages = messages;
 
-            _messageOffset += messages.Count;
+            _defaultMessageOffset += messages.Count;
 
             return View("Chat", _chatMessages);
+        }
+
+        //public async Task<IActionResult> LoadNewMessages(int messageLimit, int messageOffset = 0)
+        //{
+        //    var chatId = HttpContext.Session.GetString("ChatId");
+
+        //    var messages = await new ChatService(_context!).GetMessagesByChatId(chatId!, messageLimit, messageOffset);
+
+        //    if (_chatMessages == null)
+        //    {
+        //        _chatMessages = new List<MessageRepresentation>();
+        //    }
+
+        //    messages.AddRange(_chatMessages);
+
+        //    _chatMessages = messages;
+
+        //    _defaultMessageOffset += messages.Count;
+
+        //    return View("Chat", _chatMessages);
+        //}
+
+        [HttpPost]
+        public async Task DeleteMessage(string messageId)
+        {
+            await new ChatService(_context!).DeleteMessage(_userId!, messageId);
+
+            //return await LoadNewMessages(_chatMessages!.Count - 1);
         }
 
         [HttpPost]
@@ -187,8 +215,8 @@ namespace OnlineMessanger.Controllers
 
         private static MessangerDataContext? _context;
 
-        private static int _messageOffset = 0;
+        private static int _defaultMessageOffset = 0;
 
-        private static int _messageLimit = 20;
+        private static int _defaultMessageLimit = 20;
     }
 }

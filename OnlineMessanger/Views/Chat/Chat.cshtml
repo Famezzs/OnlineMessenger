@@ -1,4 +1,12 @@
-﻿@model List<MessageRepresentation>
+﻿@using System.Security.Claims
+@model List<MessageRepresentation>
+
+<div class="context-menu">
+    <div class="context-menu__editbtn">Edit</div>
+    <div class="context-menu__divider"></div>
+    <div class="context-menu__delbtn">Delete for self</div>
+    <div class="context-menu__delforevrbtn">Delete for everyone</div>
+</div>
 
 @using (Html.BeginForm("LoadNewMessages", "Chat"))
 {
@@ -9,22 +17,50 @@
 
 @if (Model != null)
 {
-    foreach (var message in Model)
-    {
-        <div>
-            <b>@message.OwnerName</b>
-
-            <b>@message.Message.Created</b>
-
-            @if (message.Message.IsEdited == true)
+    <ul style="list-style-type: none">
+        @foreach (var message in Model)
+        {
+            @if (message.Message.IsDeletedForSelf)
             {
-                <b>(Edited)</b>
+                continue;
             }
-            <p>
-                @message.Message.Contents
-            </p>
-        </div>
-    }
+
+            @if (message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                <li class="message-item" oncontextmenu="configureContextMenu(event)" id="@message.Message.Id">
+
+                    <b id="@message.Message.Id">@message.OwnerName (you)</b>
+                    <b id="@message.Message.Id">@message.Message.Created</b>
+
+                    @if (message.Message.IsEdited == true)
+                    {
+                        <b id="@message.Message.Id">(Edited)</b>
+                    }
+
+                    <p id="@message.Message.Id">
+                        @message.Message.Contents
+                    </p>
+                </li>
+            }
+            else
+            {
+                <li class="message-item">
+
+                    <b>@message.OwnerName</b>
+                    <b>@message.Message.Created</b>
+
+                    @if (message.Message.IsEdited == true)
+                    {
+                        <b>(Edited)</b>
+                    }
+
+                    <p>
+                        @message.Message.Contents
+                    </p>
+                </li>
+            }
+        }
+    </ul>
 }
 
 @using (Html.BeginForm("SendMessage", "Chat", FormMethod.Post))
@@ -36,11 +72,19 @@
 }
 
 <script>
+
+    let scrollPosition = window.sessionStorage.getItem("sidebar-scroll");
+
+    let currentMessageId = "";
+
+    const contextMenu = document.querySelector('.context-menu');
+
+    const deleteForAllButton = document.querySelector('.context-menu__delforevrbtn');
+
     function saveScroll() {
         window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
     }
 
-    let scrollPosition = window.sessionStorage.getItem("sidebar-scroll");
     if (scrollPosition !== null) {
         autoScrollTo(scrollPosition);
     }
@@ -52,4 +96,43 @@
         setTimeout(() => window.scrollTo(0, scrollPosition), 0.1);
         setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 0.1);
     }
+
+    function showContextMenu(show = true) {
+        contextMenu.style.display = show ? 'block' : 'none';
+    }
+
+    function configureContextMenu(event) {
+
+        showContextMenu();
+
+        contextMenu.style.top = event.pageY + "px";
+
+        contextMenu.style.left = event.pageX + "px";
+
+        currentMessageId = event.target.id;
+    }
+
+    window.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+    });
+
+    window.addEventListener('click', () => {
+        showContextMenu(false);
+    });
+
+    deleteForAllButton.addEventListener('click', () => {
+
+        saveScroll();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("DeleteMessage","Chat")',
+            data: {
+                'messageId': currentMessageId
+            }
+        }).done(() => {
+            window.location = '@Url.Action("ViewChat","Chat")';
+        });
+    });
+
 </script>
