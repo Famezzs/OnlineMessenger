@@ -98,11 +98,29 @@ namespace OnlineMessanger.Controllers
                 return RedirectIfUnauthorized();
             }
 
-            var messages = await new ChatService(_context!).GetMessagesByChatId(chatId, _messageLimit, _messageOffset);
+            _chatMessages = null;
 
-            _chatMessages.AddRange(messages);
+            _messageOffset = 0;
 
-            _messageOffset += _messageLimit;
+            return await LoadNewMessages();
+        }
+
+        public async Task<IActionResult> LoadNewMessages()
+        {
+            var chatId = HttpContext.Session.GetString("ChatId");
+
+            var messages = await new ChatService(_context!).GetMessagesByChatId(chatId!, _messageLimit, _messageOffset);
+
+            if (_chatMessages == null)
+            {
+                _chatMessages = new List<MessageRepresentation>();
+            }
+
+            messages.AddRange(_chatMessages);
+
+            _chatMessages = messages;
+
+            _messageOffset += messages.Count;
 
             return View("Chat", _chatMessages);
         }
@@ -112,6 +130,53 @@ namespace OnlineMessanger.Controllers
         {
             HttpContext.Session.SetString("ChatId", chatId);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SendMessage(string messageString)
+        {
+            if (!ValidateSession())
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var chatId = HttpContext.Session.GetString("ChatId");
+
+            var doesUserHaveAccessToChat = await new ChatService(_context!).HasAccessToChat(_userId!, chatId!);
+
+            if (!doesUserHaveAccessToChat)
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var message = new Message(_userId!, chatId!, messageString, DateTime.Now);
+
+            await _context!.Messages!.AddAsync(message);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("ViewChat", "Chat");
+        }
+
+        //[HttpPost]
+        //public async Task<IActionResult> SendMessage(string messageString)
+        //{
+        //    var chatId = HttpContext.Session.GetString("ChatId");
+
+        //    var message = new Message(_userId!, chatId!, messageString, DateTime.Now);
+
+        //    if (_chatMessages != null)
+        //    {
+        //        _chatMessages.Add(message);
+
+        //        ++_messageOffset;
+        //    }
+
+        //    await _context!.Messages!.AddAsync(message);
+
+        //    await _context.SaveChangesAsync();
+
+        //    return RedirectToAction("ViewChat", "Chat");
+        //}
 
         private bool ValidateSession()
         {
@@ -134,7 +199,7 @@ namespace OnlineMessanger.Controllers
 
         private static List<ChatRepresentation>? _userChats;
 
-        private static List<Message> _chatMessages = new List<Message>();
+        private static List<MessageRepresentation>? _chatMessages;
 
         private static MessangerDataContext? _context;
 

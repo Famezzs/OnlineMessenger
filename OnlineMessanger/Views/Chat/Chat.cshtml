@@ -1,26 +1,39 @@
-﻿@model List<Message>
+﻿@model List<MessageRepresentation>
 
 @if (Model != null)
 {
     foreach (var message in Model)
     {
         <div>
-            <b>@message.Created</b>
-            @if (message.IsEdited == true)
+            <b>@message.OwnerName</b>
+
+            <b>@message.Message.Created</b>
+
+            @if (message.Message.IsEdited == true)
             {
-                <b> Edited</b>
+                <b>(Edited)</b>
             }
             <p>
-                @message.Contents
+                @message.Message.Contents
             </p>
         </div>
     }
 }
 
-@using (Html.BeginForm("SendMessage", "Chat"))
+@using (Html.BeginForm("SendMessage", "Chat", FormMethod.Post))
 {
     <div class="message-menu">
-        <input type="text" placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"/>
-        <input type="submit" value="Message" title="Send" />
+        <input type="text" placeholder="Enter your message" value="@ViewData["Message"]" name="messageString" />
+        <input type="submit" value="Send" title="Send" />
     </div>
 }
+
+<script>
+    var positionX = 0;
+    var positionY = document.body.scrollHeight;
+
+    document.documentElement.style.scrollBehavior = 'auto';
+
+    setTimeout(() => window.scrollTo(positionX, positionY), 0.1);
+    setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 0.1);
+</script>

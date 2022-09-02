@@ -16,9 +16,18 @@
             Contents = string.Empty;
         }
 
-        public Message(string id, string ownerId, string channelId, string contents, DateTime created, bool isEdited)
+        public Message(string id, string ownerId, string channelId, string contents, DateTime created, bool isEdited = false)
         {
             Id = id;
+            OwnerId = ownerId;
+            ChannelId = channelId;
+            Contents = contents;
+            Created = created;
+            IsEdited = isEdited;
+        }
+
+        public Message(string ownerId, string channelId, string contents, DateTime created, bool isEdited = false)
+        {
             OwnerId = ownerId;
             ChannelId = channelId;
             Contents = contents;

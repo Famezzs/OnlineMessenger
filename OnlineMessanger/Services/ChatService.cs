@@ -48,17 +48,17 @@ namespace OnlineMessanger.Services
             return chats;
         }
 
-        public async Task<List<Message>> GetMessagesByChatId(string chatId, int limit, int offset)
+        public async Task<List<MessageRepresentation>> GetMessagesByChatId(string chatId, int limit, int offset)
         {
-            var messages = new List<Message>();
+            var messages = new List<MessageRepresentation>();
 
-            var fields = $"*";
+            var fields = $"Id, OwnerId, ChannelId, Contents, Created, IsEdited";
 
             var source = "dbo.Messages";
 
             var condition = $"ChannelId='{chatId}'";
 
-            var additionalOptions = $"ORDER BY Created OFFSET {offset} ROWS FETCH FIRST {limit} ROWS ONLY";
+            var additionalOptions = $"ORDER BY Created DESC OFFSET {offset} ROWS FETCH FIRST {limit} ROWS ONLY";
 
             using var queryService = new QueryService();
 
@@ -78,8 +78,14 @@ namespace OnlineMessanger.Services
 
                 var isEdited = (bool)sqlReader["IsEdited"];
 
-                messages.Add(new Message(id, ownerId, channelId, contents, createdOn, isEdited));
+                var message = new Message(id, ownerId, channelId, contents, createdOn, isEdited);
+
+                var author = await context.Users.FindAsync(ownerId);
+
+                messages.Add(new MessageRepresentation(message, author!.Email));
             }
+
+            messages.Reverse();
 
             return messages;
         }

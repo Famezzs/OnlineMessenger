@@ -2,10 +2,13 @@
 {
     public class MessageRepresentation
     {
-        public string Id { get; set; }
-        public string OwnerId { get; set; }
-        public string Contents { get; set; }
-        public DateTime Created { get; set; }
-        public bool IsEdited { get; set; }
+        public Message Message { get; set; }
+        public string OwnerName { get; set; }
+
+        public MessageRepresentation(Message message, string ownerName)
+        {
+            Message = message;
+            OwnerName = ownerName;
+        }
     }
 }
