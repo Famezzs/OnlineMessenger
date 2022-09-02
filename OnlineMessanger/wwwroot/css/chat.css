@@ -19,3 +19,8 @@
     bottom: 5%;
     transform: translateX(-50%);
 }
+
+.centered-div {
+    display: flex;
+    justify-content: center;
+}

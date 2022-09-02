@@ -1,5 +1,12 @@
 ﻿@model List<MessageRepresentation>
 
+@using (Html.BeginForm("LoadNewMessages", "Chat"))
+{
+    <div class="centered-div">
+        <input type="submit" value="Load older messages" title="Load older messages" onclick="saveScroll()" />
+    </div>
+}
+
 @if (Model != null)
 {
     foreach (var message in Model)
@@ -24,16 +31,25 @@
 {
     <div class="message-menu">
         <input type="text" placeholder="Enter your message" value="@ViewData["Message"]" name="messageString" />
-        <input type="submit" value="Send" title="Send" />
+        <input type="submit" value="Send" title="Send" onclick="saveScroll()" />
     </div>
 }
 
 <script>
-    var positionX = 0;
-    var positionY = document.body.scrollHeight;
+    function saveScroll() {
+        window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
+    }
 
-    document.documentElement.style.scrollBehavior = 'auto';
+    let scrollPosition = window.sessionStorage.getItem("sidebar-scroll");
+    if (scrollPosition !== null) {
+        autoScrollTo(scrollPosition);
+    }
 
-    setTimeout(() => window.scrollTo(positionX, positionY), 0.1);
-    setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 0.1);
+    function autoScrollTo(scrollPosition) {
+
+        document.documentElement.style.scrollBehavior = 'auto';
+
+        setTimeout(() => window.scrollTo(0, scrollPosition), 0.1);
+        setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 0.1);
+    }
 </script>

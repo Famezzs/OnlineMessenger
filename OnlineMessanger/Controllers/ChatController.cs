@@ -139,6 +139,11 @@ namespace OnlineMessanger.Controllers
                 return RedirectIfUnauthorized();
             }
 
+            if (String.IsNullOrEmpty(messageString))
+            {
+                return View("Chat", _chatMessages);
+            }
+
             var chatId = HttpContext.Session.GetString("ChatId");
 
             var doesUserHaveAccessToChat = await new ChatService(_context!).HasAccessToChat(_userId!, chatId!);
@@ -156,27 +161,6 @@ namespace OnlineMessanger.Controllers
 
             return RedirectToAction("ViewChat", "Chat");
         }
-
-        //[HttpPost]
-        //public async Task<IActionResult> SendMessage(string messageString)
-        //{
-        //    var chatId = HttpContext.Session.GetString("ChatId");
-
-        //    var message = new Message(_userId!, chatId!, messageString, DateTime.Now);
-
-        //    if (_chatMessages != null)
-        //    {
-        //        _chatMessages.Add(message);
-
-        //        ++_messageOffset;
-        //    }
-
-        //    await _context!.Messages!.AddAsync(message);
-
-        //    await _context.SaveChangesAsync();
-
-        //    return RedirectToAction("ViewChat", "Chat");
-        //}
 
         private bool ValidateSession()
         {
