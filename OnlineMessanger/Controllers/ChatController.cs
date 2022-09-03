@@ -4,6 +4,7 @@ using System.Security.Claims;
 
 using OnlineMessanger.Models;
 using OnlineMessanger.Services;
+using OnlineMessanger.Helpers;
 
 namespace OnlineMessanger.Controllers
 {
@@ -138,9 +139,27 @@ namespace OnlineMessanger.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> EditMessage(string newContents)
+        {
+            var messageId = HttpContext.Session.GetString("MessageId");
+
+            await new ChatService(_context!).EditMessage(_userId!, messageId!, newContents);
+
+            return RedirectToAction("ViewChat", "Chat");
+        }
+
+        [HttpPost]
         public void SetChatId(string chatId)
         {
             HttpContext.Session.SetString("ChatId", chatId);
+        }
+
+        [HttpPost]
+        public string SetMessageId(string messageId)
+        {
+            HttpContext.Session.SetString("MessageId", messageId);
+
+            return _chatMessages!.Find(message => message.Message.Id == messageId)!.Message.Contents;
         }
 
         [HttpPost]
@@ -156,6 +175,13 @@ namespace OnlineMessanger.Controllers
                 return View("Chat", _chatMessages);
             }
 
+            var cleanMessage = TagCleaner.CleanUp(messageString);
+
+            if (String.IsNullOrEmpty(cleanMessage))
+            {
+                return View("Chat", _chatMessages);
+            }
+
             var chatId = HttpContext.Session.GetString("ChatId");
 
             var doesUserHaveAccessToChat = await new ChatService(_context!).HasAccessToChat(_userId!, chatId!);
@@ -165,7 +191,7 @@ namespace OnlineMessanger.Controllers
                 return RedirectIfUnauthorized();
             }
 
-            var message = new Message(_userId!, chatId!, messageString, DateTime.Now);
+            var message = new Message(_userId!, chatId!, cleanMessage, DateTime.Now);
 
             await _context!.Messages!.AddAsync(message);
 

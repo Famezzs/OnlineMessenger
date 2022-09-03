@@ -1,4 +1,5 @@
-﻿using OnlineMessanger.Models;
+﻿using OnlineMessanger.Helpers;
+using OnlineMessanger.Models;
 using OnlineMessanger.Services.Interfaces;
 
 namespace OnlineMessanger.Services
@@ -157,7 +158,7 @@ namespace OnlineMessanger.Services
                 return;
             }
 
-            var message = context!.Messages!.Find(messageId);
+            var message = await context!.Messages!.FindAsync(messageId);
 
             if (message == null)
             {
@@ -176,7 +177,7 @@ namespace OnlineMessanger.Services
                 return;
             }
 
-            var message = context!.Messages!.Find(messageId);
+            var message = await context!.Messages!.FindAsync(messageId);
 
             if (message == null)
             {
@@ -184,6 +185,42 @@ namespace OnlineMessanger.Services
             }
 
             message.IsDeletedForSelf = true;
+
+            context.Update(message);
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task EditMessage(string userId, string messageId, string contents)
+        {
+            if (!await IsOwnerOfMessage(userId, messageId))
+            {
+                return;
+            }
+
+            if (String.IsNullOrWhiteSpace(contents))
+            {
+                return;
+            }
+
+            var message = await context!.Messages!.FindAsync(messageId);
+
+            if (message == null ||
+                message.Contents == contents)
+            {
+                return;
+            }
+
+            var cleanContents = TagCleaner.CleanUp(contents);
+
+            if (String.IsNullOrWhiteSpace(cleanContents))
+            {
+                return;
+            }
+
+            message.Contents = cleanContents;
+
+            message.IsEdited = true;
 
             context.Update(message);
 

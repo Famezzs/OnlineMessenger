@@ -18,6 +18,15 @@
     left: 50%;
     bottom: 5%;
     transform: translateX(-50%);
+    display: block;
+}
+
+.edit-message-menu {
+    position: fixed;
+    left: 50%;
+    bottom: 5%;
+    transform: translateX(-50%);
+    display: none;
 }
 
 .centered-div {

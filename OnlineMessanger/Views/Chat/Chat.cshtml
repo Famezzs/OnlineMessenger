@@ -20,8 +20,8 @@
     <ul style="list-style-type: none">
         @foreach (var message in Model)
         {
-            @if (message.Message.IsDeletedForSelf && 
-                message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            @if (message.Message.IsDeletedForSelf &&
+           message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 continue;
             }
@@ -66,10 +66,18 @@
 
 @using (Html.BeginForm("SendMessage", "Chat", FormMethod.Post))
 {
-    <div class="message-menu">
+    <div class="message-menu" id="message-menu">
         <input type="text" placeholder="Enter your message" value="@ViewData["Message"]" name="messageString" />
         <input type="submit" value="Send" title="Send" onclick="saveScroll()" />
         <button type="button" class="refresh-button" onclick="refreshMessages()">Refresh</button>
+    </div>
+}
+
+@using (Html.BeginForm("EditMessage", "Chat", FormMethod.Post))
+{
+    <div class="edit-message-menu" id="edit-message-menu">
+        <input type="text" value="@ViewData["EditMessage"]" name="newContents" id="edit-message-input" />
+        <input type="submit" value="Confirm" title="Confirm" onclick="saveScroll()" />
     </div>
 }
 
@@ -80,6 +88,14 @@
     let currentMessageId = "";
 
     const contextMenu = document.querySelector('.context-menu');
+
+    const sendMessageMenu = document.querySelector('.message-menu');
+
+    const editMessageMenu = document.querySelector('.edit-message-menu');
+
+    const editMessageButton = document.querySelector('.context-menu__editbtn');
+
+    const editMessageInput = document.getElementById('edit-message-input');
 
     const deleteForAllButton = document.querySelector('.context-menu__delforevrbtn');
 
@@ -105,6 +121,14 @@
         contextMenu.style.display = show ? 'block' : 'none';
     }
 
+    function showSendMessageMenu(show = true) {
+        sendMessageMenu.style.display = show ? 'block' : 'none';
+    }
+
+    function showEditMessageMenu(show = true) {
+        editMessageMenu.style.display = show ? 'block' : 'none';
+    }
+
     function configureContextMenu(event) {
 
         showContextMenu();
@@ -127,6 +151,23 @@
     window.addEventListener('click', () => {
         showContextMenu(false);
     });
+
+    editMessageButton.addEventListener('click', () => {
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetMessageId","Chat")',
+            data: {
+                'messageId': currentMessageId
+            }
+        }).done((result) => {
+            showSendMessageMenu(false);
+
+            editMessageInput.value = result;
+
+            showEditMessageMenu(true);
+        });
+    })
 
     deleteForAllButton.addEventListener('click', () => {
 
