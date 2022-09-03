@@ -32,6 +32,13 @@
     }
 
     .universal-field input {
+        width: 190px;
+        float: right;
+        margin: 5px 0;
+    }
+
+    .universal-field textarea {
+        width: 190px;
         float: right;
         margin: 5px 0;
     }

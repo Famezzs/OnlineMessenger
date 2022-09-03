@@ -29,13 +29,13 @@ namespace OnlineMessanger.Models
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<Group>? Groups { get; set; }
+        public DbSet<Group> Groups { get; set; }
 
-        public DbSet<GroupMember>? GroupMembers { get; set; }
+        public DbSet<GroupMember> GroupMembers { get; set; }
         
-        public DbSet<Chat>? Chats { get; set; }
+        public DbSet<Chat> Chats { get; set; }
 
-        public DbSet<Message>? Messages { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         private IConfiguration configuration;
     }

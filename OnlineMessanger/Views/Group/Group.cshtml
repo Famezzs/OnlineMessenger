@@ -3,15 +3,17 @@
 
 <div class="context-menu">
     <div class="context-menu__editbtn">Edit</div>
+    <div class="context-menu__replybtn">Reply</div>
     <div class="context-menu__divider"></div>
     <div class="context-menu__delbtn">Delete for self</div>
     <div class="context-menu__delforevrbtn">Delete for everyone</div>
 </div>
 
-@using (Html.BeginForm("LoadNewMessages", "Chat"))
+@using (Html.BeginForm("LoadNewMessages", "Group"))
 {
     <div class="centered-div">
         <input type="submit" value="Load older messages" title="Load older messages" onclick="saveScroll()" />
+        <button type="button" class="invite-button" onclick="showInviteForm()">Invite</button>
     </div>
 }
 
@@ -20,17 +22,27 @@
     <ul style="list-style-type: none">
         @foreach (var message in Model)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             @if (message.Message.IsDeletedForSelf &&
-           message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+           message.Message.OwnerId == userId)
             {
                 continue;
             }
 
-            @if (message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            @if (message.Message.OwnerId == userId)
             {
                 <li class="message-item" oncontextmenu="configureContextMenu(event)" id="@message.Message.Id">
 
-                    <b id="@message.Message.Id">@message.OwnerName (you)</b>
+                    @if (TempData["GroupOwner"] == userId)
+                    {
+                        <b id="@message.Message.Id">@message.OwnerName (Admin) (you)</b>
+                    }
+                    else
+                    {
+                        <b id="@message.Message.Id">@message.OwnerName (you)</b>
+                    }
+
                     <b id="@message.Message.Id">@message.Message.Created</b>
 
                     @if (message.Message.IsEdited == true)
@@ -47,8 +59,14 @@
             {
                 <li class="message-item">
 
-                    <b>@message.OwnerName</b>
-                    <b>@message.Message.Created</b>
+                    @if (TempData["OwnerId"] == message.Message.OwnerId)
+                    {
+                        <b>@message.OwnerName (Admin)</b>
+                    }
+                    else
+                    {
+                        <b>@message.Message.Created</b>
+                    }
 
                     @if (message.Message.IsEdited == true)
                     {
@@ -64,7 +82,7 @@
     </ul>
 }
 
-@using (Html.BeginForm("SendMessage", "Chat", FormMethod.Post))
+@using (Html.BeginForm("SendMessage", "Group", FormMethod.Post))
 {
     <div class="message-menu" id="message-menu">
         <textarea placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"
@@ -76,7 +94,7 @@
     </div>
 }
 
-@using (Html.BeginForm("EditMessage", "Chat", FormMethod.Post))
+@using (Html.BeginForm("EditMessage", "Group", FormMethod.Post))
 {
     <div class="edit-message-menu" id="edit-message-menu">
         <textarea value="@ViewData["EditMessage"]" name="newContents" id="edit-message-input"
@@ -87,6 +105,24 @@
     </div>
 }
 
+
+<div class="universal-form" style="display: none">
+
+    <div class="universal-form-fields">
+        <div class="universal-field">
+            <p>User's Email *</p>
+            <input type="text" name="email" placeholder="Enter an email of whom to invite" id="invite-input">
+        </div>
+    </div>
+
+    <button type="button" onclick="invitePerson()" id="invite-submit-button">Submit</button>
+
+    <div class="universal-error-message">
+        @TempData["Error"]
+    </div>
+</div>
+
+
 <script>
 
     let scrollPosition = window.sessionStorage.getItem("sidebar-scroll");
@@ -96,6 +132,12 @@
     const contextMenu = document.querySelector('.context-menu');
 
     const sendMessageMenu = document.querySelector('.message-menu');
+
+    const inviteForm = document.querySelector('.universal-form');
+
+    const inviteFormInput = document.getElementById('invite-input');
+
+    const inviteSubmitButton = document.getElementById('invite-submit-button');
 
     const editMessageMenu = document.querySelector('.edit-message-menu');
 
@@ -128,11 +170,15 @@
     }
 
     function showSendMessageMenu(show = true) {
-        sendMessageMenu.style.display = show ? 'block' : 'none';
+        sendMessageMenu.style.display = show ? 'inline-block' : 'none';
     }
 
     function showEditMessageMenu(show = true) {
-        editMessageMenu.style.display = show ? 'block' : 'none';
+        editMessageMenu.style.display = show ? 'inline-block' : 'none';
+    }
+
+    function showInviteForm(show = true) {
+        inviteForm.style.display = show ? 'table' : 'none';
     }
 
     function configureContextMenu(event) {
@@ -147,7 +193,7 @@
     }
 
     function refreshMessages() {
-        window.location = '@Url.Action("ViewChat","Chat")';
+        window.location = '@Url.Action("ViewGroup","Group")';
     }
 
     window.addEventListener('contextmenu', (event) => {
@@ -162,7 +208,7 @@
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("SetMessageId","Chat")',
+            url: '@Url.Action("SetMessageId","Group")',
             data: {
                 'messageId': currentMessageId
             }
@@ -181,7 +227,7 @@
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("DeleteMessage","Chat")',
+            url: '@Url.Action("DeleteMessage","Group")',
             data: {
                 'messageId': currentMessageId
             }
@@ -196,12 +242,35 @@
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("DeleteMessageForSelf","Chat")',
+            url: '@Url.Action("DeleteMessageForSelf","Group")',
             data: {
                 'messageId': currentMessageId
             }
         }).done(() => {
             refreshMessages();
+        });
+    })
+
+    inviteSubmitButton.addEventListener('click', () => {
+        
+        saveScroll();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Invite","Group")',
+            data: {
+                'email': inviteFormInput.value;
+            }
+        }).done((error) => {
+
+            if (error) {
+                alert(error);
+            } else {
+
+                showInviteForm(false);
+
+                inviteFormInput.value = null;
+            }
         });
     })
 

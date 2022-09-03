@@ -10,32 +10,97 @@ namespace OnlineMessanger.Services
     {
         public async Task<List<Group>> GetGroupsByUserId(string userId)
         {
-            var groupId = string.Empty;
+            var groupIds = new List<string>();
 
+            var fields = "GroupId";
+
+            var source = "dbo.GroupMembers";
+
+            var condition = $"UserId='{userId}'";
+
+            using var queryService = new QueryService();
+
+            var sqlReader = await queryService.Select(fields, source, condition);
+
+            while (await sqlReader.ReadAsync())
+            {
+                var groupId = (string)sqlReader["GroupId"];
+
+                groupIds.Add(groupId);
+            }
+
+            return await GetGroupsByIds(groupIds.ToArray());
+        }
+
+        public async Task<List<Group>> GetGroupsByIds(string[] groupIds)
+        {
             var groups = new List<Group>();
 
-            using (var sqlConnection = new SqlConnection(ConnectionStrings.GetSqlConnectionString()))
+            var fields = "Id, IsPublic, Description, ImageUrl, Name, OwnerId";
+
+            var source = "dbo.Groups";
+
+            var arrayRepresentation = ArrayToSqlCompatible.Convert(groupIds);
+
+            var condition = $"Id IN {arrayRepresentation}";
+
+            using var queryService = new QueryService();
+
+            var sqlReader = await queryService.Select(fields, source, condition);
+
+            while (await sqlReader.ReadAsync())
             {
-                await sqlConnection.OpenAsync();
+                var id = (string)sqlReader["Id"];
 
-                using var sqlCommand = new SqlCommand($"SELECT GroupId FROM dbo.GroupMembers WHERE UserId='{userId}'", sqlConnection);
+                var isPublic = (bool)sqlReader["IsPublic"];
 
-                using var reader = await sqlCommand.ExecuteReaderAsync();
+                var description = (string)sqlReader["Description"];
 
-                while (await reader.ReadAsync())
-                {
-                    groupId = (string)reader["GroupId"];
+                var imageUrl = (string)sqlReader["ImageUrl"];
 
-                    var group = await context.Groups!.FindAsync(groupId);
+                var name = (string)sqlReader["Name"];
 
-                    if (group != null)
-                    {
-                        groups.Add(group);
-                    }
-                }
+                var ownerId = (string)sqlReader["OwnerId"];
+
+                groups.Add(new Group(id, name, description, imageUrl, ownerId, isPublic));
             }
 
             return groups;
+        }
+
+        public bool HasAccessToGroup(string userId, string groupId)
+        {
+            var member = context!.GroupMembers!.Where(entry => entry.UserId == userId && entry.GroupId == groupId);
+
+            if (member == null || 
+                !member.Any())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task CreateGroup(Group group)
+        {
+            var groupMember = new GroupMember(group.OwnerId, group.Id);
+
+            await context.AddAsync(group);
+
+            await context.AddAsync(groupMember);
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task InviteToGroup(string email, string groupId)
+        {
+            if (String.IsNullOrWhiteSpace(email) || 
+                String.IsNullOrWhiteSpace(groupId))
+            {
+                return;
+            }
+
+
         }
 
         public GroupService(MessangerDataContext context)

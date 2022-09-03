@@ -8,10 +8,35 @@
 {
     @foreach (var group in Model)
     {
-
+        <div class="item" title="@group.Description">
+            <img src="@Url.Content(group.ImageUrl)"
+            id=@group.Id runat="server"
+            style="width: 100px; height: 100px;" onclick="setGroupId('@group.Id')" />
+            <span class="caption">@group.Name</span>
+        </div>
     }
+
+    <div class="item" title="New Group">
+        <img src="~/css/icons/add-chat-icon.png" runat="server"
+         style="width: 100px; height: 100px;" onclick="redirectToGroupCreate()" />
+        <span class="caption">Add Group</span>
+    </div>
 }
 
-<span>
-    <button asp-action="CreateChat" asp-controller="Chat">Create a chat</button>
-</span>
+<script>
+    function redirectToGroupCreate() {
+        window.location.href = window.location.href + '/CreateGroupForm'
+    }
+
+    function setGroupId(groupId) {
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetGroupId","Group")',
+            data: {
+                'groupId': groupId
+            }
+        }).done(function(e) {
+            window.location.href = window.location.href + '/ViewGroup'
+        })
+    }
+</script>

@@ -6,6 +6,8 @@ namespace OnlineMessanger.Helpers
     {
         public static string CleanUp(string contents)
         {
+            // This expression selects all substring which
+            // are between "<" ">" brackets
             var expressionForCleaning = new Regex("<[^>]*>");
 
             var result = expressionForCleaning.Replace(contents, "");

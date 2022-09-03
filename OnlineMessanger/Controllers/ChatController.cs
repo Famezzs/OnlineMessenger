@@ -62,7 +62,7 @@ namespace OnlineMessanger.Controllers
 
             model.ParticipantBId = otherUser.Id;
 
-            bool isChatUnique = await new ChatService(_context!).IsUnique(model.ParticipantAId, model.ParticipantBId);
+            bool isChatUnique = await new ChatService(_context!).IsChatUnique(model.ParticipantAId, model.ParticipantBId);
 
             if (!isChatUnique)
             {
@@ -110,7 +110,8 @@ namespace OnlineMessanger.Controllers
         {
             var chatId = HttpContext.Session.GetString("ChatId");
 
-            var messages = await new ChatService(_context!).GetMessagesByChatId(chatId!, _defaultMessageLimit, _defaultMessageOffset); 
+            var messages = await new MessageService(_context!)
+                .GetMessagesByChannelId(chatId!, _defaultMessageLimit, _defaultMessageOffset);
 
             if (_chatMessages == null)
             {
@@ -129,13 +130,13 @@ namespace OnlineMessanger.Controllers
         [HttpPost]
         public async Task DeleteMessage(string messageId)
         {
-            await new ChatService(_context!).DeleteMessage(_userId!, messageId);
+            await new MessageService(_context!).DeleteMessage(_userId!, messageId);
         }
 
         [HttpPost]
         public async Task DeleteMessageForSelf(string messageId)
         {
-            await new ChatService(_context!).DeleteMessageForSelf(_userId!, messageId);
+            await new MessageService(_context!).DeleteMessageForSelf(_userId!, messageId);
         }
 
         [HttpPost]
@@ -143,7 +144,7 @@ namespace OnlineMessanger.Controllers
         {
             var messageId = HttpContext.Session.GetString("MessageId");
 
-            await new ChatService(_context!).EditMessage(_userId!, messageId!, newContents);
+            await new MessageService(_context!).EditMessage(_userId!, messageId!, newContents);
 
             return RedirectToAction("ViewChat", "Chat");
         }
@@ -193,9 +194,7 @@ namespace OnlineMessanger.Controllers
 
             var message = new Message(_userId!, chatId!, cleanMessage, DateTime.Now);
 
-            await _context!.Messages!.AddAsync(message);
-
-            await _context.SaveChangesAsync();
+            await new MessageService(_context!).SaveMessage(message);
 
             return RedirectToAction("ViewChat", "Chat");
         }
@@ -217,7 +216,7 @@ namespace OnlineMessanger.Controllers
             _context = context;
         }
 
-        private static string? _userId;
+        private static string _userId = string.Empty;
 
         private static List<ChatRepresentation>? _userChats;
 

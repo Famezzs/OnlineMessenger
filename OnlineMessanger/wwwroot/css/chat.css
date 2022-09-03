@@ -15,19 +15,57 @@
 
 .message-menu {
     position: fixed;
+    height: 30px;
     left: 50%;
-    bottom: 5%;
+    bottom: 8%;
     transform: translateX(-50%);
-    display: block;
+    display: inline;
+    white-space: nowrap;
 }
+
+    .message-menu textarea {
+        resize: none;
+        height: 30px;
+        max-height: 75px;
+        width: 600px;
+        display: inline-block;
+        text-align: left;
+        float: left;
+    }
+
+    .message-menu label {
+        margin-left: 10px;
+        display: inline-block;
+        text-align: right;
+        float: right;
+    }
 
 .edit-message-menu {
     position: fixed;
+    height: 30px;
     left: 50%;
-    bottom: 5%;
+    bottom: 8%;
     transform: translateX(-50%);
     display: none;
+    white-space: nowrap;
 }
+
+    .edit-message-menu textarea {
+        resize: none;
+        height: 30px;
+        max-height: 100px;
+        width: 600px;
+        display: inline-block;
+        text-align: left;
+        float: left;
+    }
+
+    .edit-message-menu label {
+        margin-left: 10px;
+        display: inline-block;
+        text-align: right;
+        float: right;
+    }
 
 .centered-div {
     display: flex;
