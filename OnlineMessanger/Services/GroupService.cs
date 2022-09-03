@@ -100,7 +100,25 @@ namespace OnlineMessanger.Services
                 return;
             }
 
+            var user = context.Users.Where(user => user.Email == email).First();
 
+            if (user == null)
+            {
+                return;
+            }
+
+            var groupMember = context.GroupMembers.Where(member => member.UserId == user.Id && member.GroupId == groupId);
+
+            if (groupMember.Any())
+            {
+                return;
+            }
+
+            var invite = new GroupMember(user.Id, groupId);
+
+            await context.GroupMembers.AddAsync(invite);
+
+            await context.SaveChangesAsync();
         }
 
         public GroupService(MessangerDataContext context)

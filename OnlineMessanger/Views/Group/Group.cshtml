@@ -13,7 +13,7 @@
 {
     <div class="centered-div">
         <input type="submit" value="Load older messages" title="Load older messages" onclick="saveScroll()" />
-        <button type="button" class="invite-button" onclick="showInviteForm()">Invite</button>
+        <button type="button" class="manage-users-button">Manage Users</button>
     </div>
 }
 
@@ -23,6 +23,8 @@
         @foreach (var message in Model)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var groupOwner = TempData["GroupOwner"];
 
             @if (message.Message.IsDeletedForSelf &&
            message.Message.OwnerId == userId)
@@ -34,9 +36,10 @@
             {
                 <li class="message-item" oncontextmenu="configureContextMenu(event)" id="@message.Message.Id">
 
-                    @if (TempData["GroupOwner"] == userId)
+                    @if (groupOwner != null &&
+                   groupOwner.ToString() == userId)
                     {
-                        <b id="@message.Message.Id">@message.OwnerName (Admin) (you)</b>
+                        <b id="@message.Message.Id">@message.OwnerName (Owner) (you)</b>
                     }
                     else
                     {
@@ -59,14 +62,17 @@
             {
                 <li class="message-item">
 
-                    @if (TempData["OwnerId"] == message.Message.OwnerId)
+                    @if (groupOwner != null &&
+                   groupOwner.ToString() == message.Message.OwnerId)
                     {
-                        <b>@message.OwnerName (Admin)</b>
+                        <b>@message.OwnerName (Owner)</b>
                     }
                     else
                     {
-                        <b>@message.Message.Created</b>
+                        <b>@message.OwnerName</b>
                     }
+
+                    <b>@message.Message.Created</b>
 
                     @if (message.Message.IsEdited == true)
                     {
@@ -111,14 +117,19 @@
     <div class="universal-form-fields">
         <div class="universal-field">
             <p>User's Email *</p>
-            <input type="text" name="email" placeholder="Enter an email of whom to invite" id="invite-input">
+            <input type="text" name="email" id="manage-users-input">
         </div>
     </div>
 
-    <button type="button" onclick="invitePerson()" id="invite-submit-button">Submit</button>
+    <button type="button" id="invite-submit-button">Invite</button>
 
-    <div class="universal-error-message">
-        @TempData["Error"]
+    @if (TempData["GroupOwner"] != null &&
+    User.FindFirstValue(ClaimTypes.NameIdentifier) == TempData["GroupOwner"].ToString())
+    {
+        <button type="button" id="remove-member-submit-button">Remove</button>
+    }
+
+    <div class="universal-error-message" style="display: none">
     </div>
 </div>
 
@@ -135,9 +146,11 @@
 
     const inviteForm = document.querySelector('.universal-form');
 
-    const inviteFormInput = document.getElementById('invite-input');
+    const manageUsersFormInput = document.getElementById('manage-users-input');
 
     const inviteSubmitButton = document.getElementById('invite-submit-button');
+
+    const inviteButton = document.querySelector('.manage-users-button');
 
     const editMessageMenu = document.querySelector('.edit-message-menu');
 
@@ -148,6 +161,8 @@
     const deleteForAllButton = document.querySelector('.context-menu__delforevrbtn');
 
     const deleteForSelfButton = document.querySelector('.context-menu__delbtn');
+
+    const errorNotification = document.querySelector('.universal-error-message');
 
     function saveScroll() {
         window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
@@ -179,6 +194,10 @@
 
     function showInviteForm(show = true) {
         inviteForm.style.display = show ? 'table' : 'none';
+    }
+
+    function showErrorNotification(show = true) {
+        errorNotification.style.display = show ? 'block' : 'none';
     }
 
     function configureContextMenu(event) {
@@ -249,29 +268,37 @@
         }).done(() => {
             refreshMessages();
         });
-    })
+    });
+
+    inviteButton.addEventListener('click', () => {
+        showInviteForm();
+    });
 
     inviteSubmitButton.addEventListener('click', () => {
-        
+
         saveScroll();
 
         $.ajax({
             type: 'POST',
             url: '@Url.Action("Invite","Group")',
             data: {
-                'email': inviteFormInput.value;
+                'email': manageUsersFormInput.value
             }
         }).done((error) => {
 
             if (error) {
                 alert(error);
+
+                errorNotification.innerHTML = error;
+
+                showErrorNotification();
             } else {
 
                 showInviteForm(false);
 
-                inviteFormInput.value = null;
+                manageUsersFormInput.value = null;
             }
         });
-    })
+    });
 
 </script>
