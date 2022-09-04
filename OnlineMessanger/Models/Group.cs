@@ -7,30 +7,27 @@
         public string Description { get; set; }
         public string ImageUrl { get; set; }
         public string OwnerId { get; set; }
-        public bool IsPublic { get; set; }
 
         public Group()
         {
 
         }
 
-        public Group(string name, string description, string imageUrl, string ownerId, bool isPublic)
+        public Group(string name, string description, string imageUrl, string ownerId)
         {
             Name = name;
             Description = description;
             ImageUrl = imageUrl;
             OwnerId = ownerId;
-            IsPublic = isPublic;
         }
 
-        public Group(string id, string name, string description, string imageUrl, string ownerId, bool isPublic)
+        public Group(string id, string name, string description, string imageUrl, string ownerId)
         {
             Id = id;
             Name = name;
             Description = description;
             ImageUrl = imageUrl;
             OwnerId = ownerId;
-            IsPublic = isPublic;
         }
     }
 }

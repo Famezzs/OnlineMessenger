@@ -37,7 +37,7 @@ namespace OnlineMessanger.Services
         {
             var groups = new List<Group>();
 
-            var fields = "Id, IsPublic, Description, ImageUrl, Name, OwnerId";
+            var fields = "Id, Description, ImageUrl, Name, OwnerId";
 
             var source = "dbo.Groups";
 
@@ -53,8 +53,6 @@ namespace OnlineMessanger.Services
             {
                 var id = (string)sqlReader["Id"];
 
-                var isPublic = (bool)sqlReader["IsPublic"];
-
                 var description = (string)sqlReader["Description"];
 
                 var imageUrl = (string)sqlReader["ImageUrl"];
@@ -63,7 +61,7 @@ namespace OnlineMessanger.Services
 
                 var ownerId = (string)sqlReader["OwnerId"];
 
-                groups.Add(new Group(id, name, description, imageUrl, ownerId, isPublic));
+                groups.Add(new Group(id, name, description, imageUrl, ownerId));
             }
 
             return groups;
