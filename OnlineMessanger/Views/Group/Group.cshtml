@@ -5,19 +5,60 @@
     string groupOwner = HttpContextAccessor.HttpContext.Session.GetString("GroupOwner");
 
     string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    string groupName = HttpContextAccessor.HttpContext.Session.GetString("GroupName");
 }
 
 @model List<MessageRepresentation>
 
 <div class="context-menu">
-    <div class="context-menu__editbtn">Edit</div>
+    <div class="context-menu__editbtn" data-request-url="@Url.Action("SetMessageId","Group")">Edit</div>
     <div class="context-menu__divider"></div>
     <div class="context-menu__delbtn">Delete for self</div>
-    <div class="context-menu__delforevrbtn">Delete for everyone</div>
+    <div class="context-menu__delforevrbtn" data-request-url="@Url.Action("DeleteMessage","Group")">Delete for everyone</div>
 </div>
 
+@if (!String.IsNullOrWhiteSpace(groupName))
+{
+    <div style="height: 100px">
+        <h2 class="text-center">@groupName</h2>
+    </div>
+}
+
 <div class="context-menu" id="reply-menu">
-    <div class="context-menu__replybtn">Reply</div>
+    <div class="context-menu__replybtn" id="reply">Reply</div>
+    <div class="context-menu__replybtn" id="reply-privately">Reply Privately</div>
+</div>
+
+<div class="universal-form" style="display: none; background-color: white;">
+
+    <div class="close-button" id="close-manage-users-menu"></div>
+
+    <p>
+        <b>Member list:</b>
+    </p>
+
+    <div class="universal-form-fields" id="member-list">
+    </div>
+
+    <div style="display: block; height: 30px;"></div>
+
+    <div class="universal-form-fields">
+        <div class="universal-field">
+            <p>User's Email *</p>
+            <input type="text" name="email" id="manage-users-input">
+        </div>
+    </div>
+
+    <button type="button" class="invite-user-button" id="invite-submit-button">Invite</button>
+
+    @if (userId == groupOwner)
+    {
+        <button type="button" class="remove-user-button" id="remove-member-submit-button">Remove</button>
+    }
+
+    <div class="universal-error-message" style="display: none">
+    </div>
 </div>
 
 @using (Html.BeginForm("LoadNewMessages", "Group"))
@@ -107,11 +148,33 @@
                     <p id="@message.Message.Id">
                         @message.Message.Contents
                     </p>
+
+                    @if (message.ReplyTo != null)
+                    {
+                        <b id="@message.Message.Id">In reply to:</b>
+                        <div class="message-item" id="@message.Message.Id">
+
+                            <b id="@message.Message.Id">@message.ReplyTo.ReplyToMessageId</b>
+
+                            <b id="@message.Message.Id">@message.ReplyTo.Created</b>
+
+                            @if (message.ReplyTo.IsEdited == true)
+                            {
+                                <b id="@message.Message.Id">(Edited)</b>
+                            }
+
+                            <p id="@message.Message.Id">
+                                @message.ReplyTo.Contents
+                            </p>
+                        </div>
+                    }
                 </li>
             }
         }
     </ul>
 }
+
+<div style="height: 100px; margin-bottom: 40px;"></div>
 
 @using (Html.BeginForm("MessageHandler", "Group", FormMethod.Post))
 {
@@ -119,7 +182,7 @@
         <textarea placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"
               oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
         <span>
-            <input type="submit" value="Send" title="Send" onclick="saveScroll()" />
+            <input type="submit" value="Send" title="Send" onclick="saveScroll()" id="message-menu-submit" />
             <button type="button" class="refresh-button" onclick="refreshMessages()">Refresh</button>
         </span>
     </div>
@@ -136,26 +199,6 @@
     </div>
 }
 
-<div class="universal-form" style="display: none">
-
-    <div class="universal-form-fields">
-        <div class="universal-field">
-            <p>User's Email *</p>
-            <input type="text" name="email" id="manage-users-input">
-        </div>
-    </div>
-
-    <button type="button" class="invite-user-button" id="invite-submit-button">Invite</button>
-
-    @if (userId == groupOwner)
-    {
-        <button type="button" class="remove-user-button" id="remove-member-submit-button">Remove</button>
-    }
-
-    <div class="universal-error-message" style="display: none">
-    </div>
-</div>
-
 <script>
 
     let scrollPosition = window.sessionStorage.getItem("sidebar-scroll");
@@ -166,9 +209,13 @@
 
     const replyMenu = document.getElementById('reply-menu');
 
-    const replyButton = document.querySelector('.context-menu__replybtn');
+    const replyButton = document.getElementById('reply');
+
+    const replyPrivatelyButton = document.getElementById('reply-privately');
 
     const sendMessageMenu = document.querySelector('.message-menu');
+
+    const sendMessageMenuSubmit = document.getElementById('message-menu-submit');
 
     const inviteForm = document.querySelector('.universal-form');
 
@@ -177,6 +224,8 @@
     const inviteSubmitButton = document.getElementById('invite-submit-button');
 
     const inviteButton = document.querySelector('.manage-users-button');
+
+    const closeManageUsersMenu = document.getElementById('close-manage-users-menu');
 
     const editMessageMenu = document.querySelector('.edit-message-menu');
 
@@ -192,6 +241,8 @@
 
     const removeUserButton = document.querySelector('.remove-user-button');
 
+    const memberList = document.getElementById('member-list');
+
     function saveScroll() {
         window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
     }
@@ -204,8 +255,8 @@
 
         document.documentElement.style.scrollBehavior = 'auto';
 
-        setTimeout(() => window.scrollTo(0, scrollPosition), 0.1);
-        setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 0.1);
+        setTimeout(() => window.scrollTo(0, scrollPosition), 1);
+        setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 1);
     }
 
     function showContextMenu(show = true) {
@@ -225,10 +276,25 @@
     }
 
     function showInviteForm(show = true) {
-        inviteForm.style.display = show ? 'table' : 'none';
 
         if (!show) {
+
             manageUsersFormInput.value = null;
+
+            inviteForm.style.display = show ? 'table' : 'none';
+
+        } else {
+
+            $.ajax({
+                type: 'GET',
+                url: '@Url.Action("GetMembersOfGroup", "Group")'
+
+            }).done((result) => {
+
+                memberList.innerHTML = result;
+
+                inviteForm.style.display = show ? 'table' : 'none';
+            });
         }
     }
 
@@ -263,7 +329,22 @@
     }
 
     function refreshMessages() {
-        window.location = '@Url.Action("ViewGroup","Group")';
+
+        saveScroll();
+
+        location.reload();
+    }
+
+    function switchSubmitMessageButton() {
+        sendMessageMenuSubmit.value = "Reply";
+
+        sendMessageMenuSubmit.style.backgroundColor = 'blue';
+
+        sendMessageMenuSubmit.style.color = 'white';
+
+        sendMessageMenuSubmit.style.border = '1px solid black';
+
+        sendMessageMenuSubmit.style.borderRadius = '2px';
     }
 
     window.addEventListener('contextmenu', (event) => {
@@ -279,7 +360,7 @@
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("SetMessageId","Group")',
+            url: editMessageButton.dataset.requestUrl,
             data: {
                 'messageId': currentMessageId
             }
@@ -298,7 +379,7 @@
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("DeleteMessage","Group")',
+            url: deleteForAllButton.dataset.requestUrl,
             data: {
                 'messageId': currentMessageId
             }
@@ -347,6 +428,10 @@
 
                 alert('Success!');
 
+                errorNotification.innerHTML = null;
+
+                showErrorNotification(false);
+
                 showInviteForm(false);
             }
         });
@@ -356,15 +441,40 @@
 
         saveScroll();
 
+        switchSubmitMessageButton();
+
         $.ajax({
             type: 'POST',
             url: '@Url.Action("SetReplyMode","Group")',
             data: {
-                'messageId': currentMessageId
+                'messageId': currentMessageId,
+                'replyMode': 'pub'
             }
         }).done(() => {
 
         });
+    });
+
+    replyPrivatelyButton.addEventListener('click', () => {
+
+        saveScroll();
+
+        switchSubmitMessageButton();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("SetReplyMode","Group")',
+            data: {
+                'messageId': currentMessageId,
+                'replyMode': 'pri'
+            }
+        }).done(() => {
+
+        });
+    });
+
+    closeManageUsersMenu.addEventListener('click', () => {
+        showInviteForm(false);
     });
 
     if (removeUserButton != null) {
@@ -388,6 +498,10 @@
                 } else {
 
                     alert('Success!');
+
+                    errorNotification.innerHTML = null;
+
+                    showErrorNotification(false);
 
                     showInviteForm(false);
                 }

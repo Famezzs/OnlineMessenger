@@ -12,6 +12,12 @@
             ParticipantBId = string.Empty;
         }
 
+        public Chat(string participantAId, string participantBId)
+        {
+            ParticipantAId = participantAId;
+            ParticipantBId = participantBId;
+        }
+
         public Chat(string id, string participantAId, string participantBId)
         {
             Id = id;

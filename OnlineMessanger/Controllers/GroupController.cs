@@ -89,6 +89,8 @@ namespace OnlineMessanger.Controllers
                 return RedirectIfUnauthorized();
             }
 
+            await SetGroupName(groupId);
+
             _groupMessages = null;
 
             _defaultMessageOffset = 0;
@@ -120,16 +122,19 @@ namespace OnlineMessanger.Controllers
         [HttpPost]
         public async Task<IActionResult> MessageHandler(string messageString)
         {
-            var isReplyMode = HttpContext.Session.GetString("IsReplyMode");
+            var replyMode = HttpContext.Session.GetString("ReplyMode");
 
-            if (String.IsNullOrWhiteSpace(isReplyMode))
+            if (String.IsNullOrWhiteSpace(replyMode))
             {
                 return await SendMessage(messageString);
             }
-            else
+
+            if (replyMode == Constants._publicReplyMode)
             {
                 return await ReplyToMessage(messageString);
             }
+
+            return await ReplyToMessagePrivately(messageString);
         }
 
         [HttpPost]
@@ -211,9 +216,61 @@ namespace OnlineMessanger.Controllers
 
             await new MessageService(_context!).SaveMessage(message);
 
-            HttpContext.Session.SetString("IsReplyMode", "");
+            HttpContext.Session.SetString("ReplyMode", "");
 
             return RedirectToAction("ViewGroup", "Group");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReplyToMessagePrivately(string messageString)
+        {
+            if (!ValidateSession())
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var messageToReplyId = HttpContext.Session.GetString("MessageReplyId");
+
+            if (String.IsNullOrEmpty(messageString) ||
+                String.IsNullOrEmpty(messageToReplyId))
+            {
+                return View("Group", _groupMessages);
+            }
+
+            var messageToReplyTo = _context!.Messages.Where(message => message.Id == messageToReplyId);
+
+            if (!messageToReplyTo.Any())
+            {
+                return View("Group", _groupMessages);
+            }
+
+            var cleanMessage = TagCleaner.CleanUp(messageString);
+
+            if (String.IsNullOrEmpty(cleanMessage))
+            {
+                return View("Group", _groupMessages);
+            }
+
+            var groupId = HttpContext.Session.GetString("GroupId");
+
+            var isUserMemberOfGroup = new GroupService(_context!).HasAccessToGroup(_userId!, groupId!);
+
+            if (!isUserMemberOfGroup)
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var chatId = await new ChatService(_context!).CreateChatIfNotExists(_userId!, messageToReplyTo.First().OwnerId);
+
+            var message = new Message(_userId!, chatId, cleanMessage, DateTime.Now, messageToReplyId);
+
+            await new MessageService(_context!).SaveMessage(message);
+
+            HttpContext.Session.SetString("ReplyMode", "");
+
+            HttpContext.Session.SetString("ChatId", chatId);
+
+            return RedirectToAction("ViewChat", "Chat");
         }
 
         [HttpPost]
@@ -301,11 +358,29 @@ namespace OnlineMessanger.Controllers
         }
 
         [HttpPost]
-        public void SetReplyMode(string messageId)
+        public void SetReplyMode(string messageId, string replyMode)
         {
             HttpContext.Session.SetString("MessageReplyId", messageId);
 
-            HttpContext.Session.SetString("IsReplyMode", "true");
+            HttpContext.Session.SetString("ReplyMode", replyMode);
+        }
+
+        [HttpGet]
+        public string GetMembersOfGroup()
+        {
+            var groupId = HttpContext.Session.GetString("GroupId");
+
+            return new GroupService(_context!).GetMembersByGroupId(groupId!);
+        }
+
+        public async Task SetGroupName(string groupId)
+        {
+            var group = await _context!.Groups.FindAsync(groupId);
+
+            if (group != null)
+            {
+                HttpContext.Session.SetString("GroupName", group.Name);
+            }
         }
 
         private bool ValidateSession()

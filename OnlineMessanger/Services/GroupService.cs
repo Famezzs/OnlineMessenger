@@ -158,6 +158,43 @@ namespace OnlineMessanger.Services
 
             await context.SaveChangesAsync();
         }
+        public string GetMembersByGroupId(string groupId)
+        {
+            if (String.IsNullOrWhiteSpace(groupId))
+            {
+                return string.Empty;
+            }
+
+            var groupInvitations = context.GroupMembers.Where(invite => invite.GroupId == groupId);
+
+            if (!groupInvitations.Any())
+            {
+                return string.Empty;
+            }
+
+            var memberIds = new HashSet<string>();
+
+            foreach (var invitation in groupInvitations)
+            {
+                memberIds.Add(invitation.UserId);
+            }
+
+            var members = context.Users.Where(user => memberIds.Contains(user.Id));
+
+            if (!members.Any())
+            {
+                return string.Empty;
+            }
+
+            var result = string.Empty;
+
+            foreach (var member in members)
+            {
+                result += member.Email + "<br>";
+            }
+
+            return result;
+        }
 
         public GroupService(MessangerDataContext context)
         {

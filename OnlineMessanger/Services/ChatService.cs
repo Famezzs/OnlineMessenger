@@ -88,6 +88,31 @@ namespace OnlineMessanger.Services
             return true;
         }
 
+        public async Task<string> CreateChatIfNotExists(string participantAId, string participantBId)
+        {
+            var participantIds = new HashSet<string>();
+
+            participantIds.Add(participantAId);
+
+            participantIds.Add(participantBId);
+
+            var existingChat = context.Chats.Where(chat => participantIds.Contains(chat.ParticipantAId) &&
+                                                    participantIds.Contains(chat.ParticipantBId));
+
+            if (existingChat.Any())
+            {
+                return existingChat.First().Id;
+            }
+
+            var newChat = new Chat(participantAId, participantBId);
+
+            await context.Chats.AddAsync(newChat);
+
+            await context.SaveChangesAsync();
+
+            return newChat.Id;
+        }
+
         public ChatService(MessangerDataContext context)
         {
             this.context = context;

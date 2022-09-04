@@ -19,5 +19,13 @@
         public static readonly string _userIsNotMemberOfGroupError = "User is not a member of this group.";
 
         public static readonly string _cannotRemoveSelfError = "You cannot remove yourself from the group.";
+
+        public static readonly string _cannotCreateChatWithSelfError = "You cannot create a chat with only yourself.";
+
+        public static readonly string _chatAlreadyExistsError = "Chat already exists.";
+
+        public static readonly string _publicReplyMode = "pub";
+
+        public static readonly string _privateReplyMode = "pri";
     }
 }

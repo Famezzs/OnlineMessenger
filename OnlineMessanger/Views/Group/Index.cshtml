@@ -9,10 +9,21 @@
     @foreach (var group in Model)
     {
         <div class="item" title="@group.Description">
-            <img src="@Url.Content(group.ImageUrl)"
-            id=@group.Id runat="server"
-            style="width: 100px; height: 100px;" onclick="setGroupId('@group.Id')" />
-            <span class="caption">@group.Name</span>
+            @if (String.IsNullOrWhiteSpace(group.ImageUrl))
+            {
+                <img src="~/css/icons/default-chat-icon.png"
+                    id=@group.Id runat="server"
+                    style="width: 100px; height: 100px;" onclick="setGroupId('@group.Id')" />
+                <span class="caption">@group.Name</span>
+            }
+            else
+            {
+                <img src="@Url.Content(group.ImageUrl)"
+                    id=@group.Id runat="server"
+                    style="width: 100px; height: 100px;" onclick="setGroupId('@group.Id')" />
+                <span class="caption">@group.Name</span>
+            }
+
         </div>
     }
 

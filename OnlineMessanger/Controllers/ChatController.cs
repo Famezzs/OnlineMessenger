@@ -5,6 +5,7 @@ using System.Security.Claims;
 using OnlineMessanger.Models;
 using OnlineMessanger.Services;
 using OnlineMessanger.Helpers;
+using OnlineMessanger.Helpers.Constants;
 
 namespace OnlineMessanger.Controllers
 {
@@ -46,14 +47,14 @@ namespace OnlineMessanger.Controllers
 
             if (otherUser == null)
             {
-                TempData["Error"] = "No such user exists.";
+                TempData["Error"] = Constants._noSuchUserExistsError;
 
                 return RedirectToAction("CreateChatForm", "Chat");
             }
 
             if (otherUser.Id == _userId)
             {
-                TempData["Error"] = "Cannot create a chat with oneself.";
+                TempData["Error"] = Constants._cannotCreateChatWithSelfError;
 
                 return RedirectToAction("CreateChatForm", "Chat");
             }
@@ -66,7 +67,7 @@ namespace OnlineMessanger.Controllers
 
             if (!isChatUnique)
             {
-                TempData["Error"] = "Chat already exists.";
+                TempData["Error"] = Constants._chatAlreadyExistsError;
 
                 return RedirectToAction("CreateChatForm", "Chat");
             }
@@ -99,6 +100,8 @@ namespace OnlineMessanger.Controllers
                 return RedirectIfUnauthorized();
             }
 
+            await SetChatName(chatId);
+
             _chatMessages = null;
 
             _defaultMessageOffset = 0;
@@ -111,7 +114,7 @@ namespace OnlineMessanger.Controllers
             var chatId = HttpContext.Session.GetString("ChatId");
 
             var messages = await new MessageService(_context!)
-                .GetMessagesByChannelId(chatId!, _defaultMessageLimit, _defaultMessageOffset);
+                .GetMessagesWithRepliesByChannelId(chatId!, _defaultMessageLimit, _defaultMessageOffset);
 
             if (_chatMessages == null)
             {
@@ -197,6 +200,41 @@ namespace OnlineMessanger.Controllers
             await new MessageService(_context!).SaveMessage(message);
 
             return RedirectToAction("ViewChat", "Chat");
+        }
+
+        private async Task SetChatName(string chatId)
+        {
+            var chat = await _context!.Chats.FindAsync(chatId);
+
+            if (chat == null)
+            {
+                return;
+            }
+
+            var userA = await _context!.Users.FindAsync(chat.ParticipantAId);
+
+            if (userA == null)
+            {
+                return;
+            }
+
+            var userB = await _context!.Users.FindAsync(chat.ParticipantBId);
+
+            if (userB == null)
+            {
+                return;
+            }
+
+            var chatName = string.Empty;
+
+            if (_userId == userA.Id)
+            {
+                HttpContext.Session.SetString("ChatName", userB.Email);
+            }
+            else
+            {
+                HttpContext.Session.SetString("ChatName", userA.Email);
+            }
         }
 
         private bool ValidateSession()

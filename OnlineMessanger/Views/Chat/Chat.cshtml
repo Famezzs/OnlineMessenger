@@ -1,5 +1,11 @@
 ﻿@using System.Security.Claims
 @model List<MessageRepresentation>
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    string chatName = HttpContextAccessor.HttpContext.Session.GetString("ChatName");
+}
 
 <div class="context-menu">
     <div class="context-menu__editbtn">Edit</div>
@@ -7,6 +13,13 @@
     <div class="context-menu__delbtn">Delete for self</div>
     <div class="context-menu__delforevrbtn">Delete for everyone</div>
 </div>
+
+@if (!String.IsNullOrWhiteSpace(chatName))
+{
+    <div style="height: 100px">
+        <h2 class="text-center">@chatName</h2>
+    </div>
+}
 
 @using (Html.BeginForm("LoadNewMessages", "Chat"))
 {
@@ -21,12 +34,12 @@
         @foreach (var message in Model)
         {
             @if (message.Message.IsDeletedForSelf &&
-           message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+           message.Message.OwnerId == userId)
             {
                 continue;
             }
 
-            @if (message.Message.OwnerId == User.FindFirstValue(ClaimTypes.NameIdentifier))
+            @if (message.Message.OwnerId == userId)
             {
                 <li class="message-item" oncontextmenu="configureContextMenu(event)" id="@message.Message.Id">
 
@@ -41,6 +54,26 @@
                     <p id="@message.Message.Id">
                         @message.Message.Contents
                     </p>
+
+                    @if (message.ReplyTo != null)
+                    {
+                        <b id="@message.Message.Id">In reply to:</b>
+                        <div class="message-item" id="@message.Message.Id">
+
+                            <b id="@message.Message.Id">@message.ReplyTo.ReplyToMessageId</b>
+
+                            <b id="@message.Message.Id">@message.ReplyTo.Created</b>
+
+                            @if (message.ReplyTo.IsEdited == true)
+                            {
+                                <b id="@message.Message.Id">(Edited)</b>
+                            }
+
+                            <p id="@message.Message.Id">
+                                @message.ReplyTo.Contents
+                            </p>
+                        </div>
+                    }
                 </li>
             }
             else
@@ -58,6 +91,26 @@
                     <p>
                         @message.Message.Contents
                     </p>
+
+                    @if (message.ReplyTo != null)
+                    {
+                        <b id="@message.Message.Id">In reply to:</b>
+                        <div class="message-item" id="@message.Message.Id">
+
+                            <b id="@message.Message.Id">@message.ReplyTo.ReplyToMessageId</b>
+
+                            <b id="@message.Message.Id">@message.ReplyTo.Created</b>
+
+                            @if (message.ReplyTo.IsEdited == true)
+                            {
+                                <b id="@message.Message.Id">(Edited)</b>
+                            }
+
+                            <p id="@message.Message.Id">
+                                @message.ReplyTo.Contents
+                            </p>
+                        </div>
+                    }
                 </li>
             }
         }
@@ -69,10 +122,10 @@
     <div class="message-menu" id="message-menu">
         <textarea placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"
               oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
-        <label>
+        <span>
             <input type="submit" value="Send" title="Send" onclick="saveScroll()" />
             <button type="button" class="refresh-button" onclick="refreshMessages()">Refresh</button>
-        </label>
+        </span>
     </div>
 }
 
@@ -81,9 +134,9 @@
     <div class="edit-message-menu" id="edit-message-menu">
         <textarea value="@ViewData["EditMessage"]" name="newContents" id="edit-message-input"
               oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
-        <label>
+        <span>
             <input type="submit" value="Confirm" title="Confirm" onclick="saveScroll()" />
-        </label>
+        </span>
     </div>
 }
 
@@ -147,7 +200,10 @@
     }
 
     function refreshMessages() {
-        window.location = '@Url.Action("ViewChat","Chat")';
+
+        saveScroll();
+
+        location.reload();
     }
 
     window.addEventListener('contextmenu', (event) => {
