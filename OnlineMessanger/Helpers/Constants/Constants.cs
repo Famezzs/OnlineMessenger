@@ -8,5 +8,16 @@
 
         public static readonly string _defaultGroupDescription = "No description provided.";
 
+        public static readonly string _noSuchUserExistsError = "No such user exists.";
+
+        public static readonly string _notEnoughPermissionError = "You do not have enough permissions to perform this action.";
+
+        public static readonly string _userIsAlreadyMemberError = "User is already a member of this group.";
+
+        public static readonly string _noSuchGroupExistsError = "No such group exists.";
+
+        public static readonly string _userIsNotMemberOfGroupError = "User is not a member of this group.";
+
+        public static readonly string _cannotRemoveSelfError = "You cannot remove yourself from the group.";
     }
 }

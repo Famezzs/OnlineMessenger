@@ -1,4 +1,12 @@
 ﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Http;
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    string groupOwner = HttpContextAccessor.HttpContext.Session.GetString("GroupOwner");
+
+    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
 @model List<MessageRepresentation>
 
 <div class="context-menu">
@@ -22,10 +30,6 @@
     <ul style="list-style-type: none">
         @foreach (var message in Model)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            var groupOwner = TempData["GroupOwner"];
-
             @if (message.Message.IsDeletedForSelf &&
            message.Message.OwnerId == userId)
             {
@@ -36,8 +40,7 @@
             {
                 <li class="message-item" oncontextmenu="configureContextMenu(event)" id="@message.Message.Id">
 
-                    @if (groupOwner != null &&
-                   groupOwner.ToString() == userId)
+                    @if (groupOwner == userId)
                     {
                         <b id="@message.Message.Id">@message.OwnerName (Owner) (you)</b>
                     }
@@ -62,8 +65,7 @@
             {
                 <li class="message-item">
 
-                    @if (groupOwner != null &&
-                   groupOwner.ToString() == message.Message.OwnerId)
+                    @if (groupOwner == message.Message.OwnerId)
                     {
                         <b>@message.OwnerName (Owner)</b>
                     }
@@ -93,10 +95,10 @@
     <div class="message-menu" id="message-menu">
         <textarea placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"
               oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
-        <label>
+        <span>
             <input type="submit" value="Send" title="Send" onclick="saveScroll()" />
             <button type="button" class="refresh-button" onclick="refreshMessages()">Refresh</button>
-        </label>
+        </span>
     </div>
 }
 
@@ -105,12 +107,11 @@
     <div class="edit-message-menu" id="edit-message-menu">
         <textarea value="@ViewData["EditMessage"]" name="newContents" id="edit-message-input"
               oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
-        <label>
+        <span>
             <input type="submit" value="Confirm" title="Confirm" onclick="saveScroll()" />
-        </label>
+        </span>
     </div>
 }
-
 
 <div class="universal-form" style="display: none">
 
@@ -121,18 +122,16 @@
         </div>
     </div>
 
-    <button type="button" id="invite-submit-button">Invite</button>
+    <button type="button" class="invite-user-button" id="invite-submit-button">Invite</button>
 
-    @if (TempData["GroupOwner"] != null &&
-    User.FindFirstValue(ClaimTypes.NameIdentifier) == TempData["GroupOwner"].ToString())
+    @if (userId == groupOwner)
     {
-        <button type="button" id="remove-member-submit-button">Remove</button>
+        <button type="button" class="remove-user-button" id="remove-member-submit-button">Remove</button>
     }
 
     <div class="universal-error-message" style="display: none">
     </div>
 </div>
-
 
 <script>
 
@@ -163,6 +162,8 @@
     const deleteForSelfButton = document.querySelector('.context-menu__delbtn');
 
     const errorNotification = document.querySelector('.universal-error-message');
+
+    const removeUserButton = document.querySelector('.remove-user-button');
 
     function saveScroll() {
         window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
@@ -287,12 +288,41 @@
         }).done((error) => {
 
             if (error) {
-                alert(error);
 
                 errorNotification.innerHTML = error;
 
                 showErrorNotification();
             } else {
+
+                alert('Success!');
+
+                showInviteForm(false);
+
+                manageUsersFormInput.value = null;
+            }
+        });
+    });
+
+    removeUserButton.addEventListener('click', () => {
+
+        saveScroll();
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("RemoveMember","Group")',
+            data: {
+                'email': manageUsersFormInput.value
+            }
+        }).done((error) => {
+
+            if (error) {
+
+                errorNotification.innerHTML = error;
+
+                showErrorNotification();
+            } else {
+
+                alert('Success!');
 
                 showInviteForm(false);
 

@@ -187,7 +187,36 @@ namespace OnlineMessanger.Controllers
 
             var groupId = HttpContext.Session.GetString("GroupId");
 
-            await new GroupService(_context!).InviteToGroup(email, groupId!);
+            try
+            {
+                await new GroupService(_context!).InviteToGroup(email, groupId!);
+            }
+            catch (Exception exception)
+            {
+                return exception.Message;
+            }
+
+            return null;
+        }
+
+        [HttpPost]
+        public async Task<string?> RemoveMember(string email)
+        {
+            if (String.IsNullOrWhiteSpace(email))
+            {
+                return Constants._requiredFieldsEmptyError;
+            }
+
+            var groupId = HttpContext.Session.GetString("GroupId");
+
+            try
+            {
+                await new GroupService(_context!).RemoveFromGroup(email, groupId!, _userId!);
+            }
+            catch (Exception exception)
+            {
+                return exception.Message;
+            }
 
             return null;
         }
@@ -197,7 +226,9 @@ namespace OnlineMessanger.Controllers
         {
             HttpContext.Session.SetString("GroupId", groupId);
 
-            TempData["GroupOwner"] = _userGroups!.Find(group => group.Id == groupId)!.OwnerId;
+            var groupOwner = _userGroups!.Find(group => group.Id == groupId)!.OwnerId;
+
+            HttpContext.Session.SetString("GroupOwner", groupOwner);
         }
 
         [HttpPost]

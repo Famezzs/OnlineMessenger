@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 
 using OnlineMessanger.Helpers;
+using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Models;
 using OnlineMessanger.Services.Interfaces;
 
@@ -94,29 +95,68 @@ namespace OnlineMessanger.Services
 
         public async Task InviteToGroup(string email, string groupId)
         {
-            if (String.IsNullOrWhiteSpace(email) || 
-                String.IsNullOrWhiteSpace(groupId))
-            {
-                return;
-            }
-
             var user = context.Users.Where(user => user.Email == email).First();
 
             if (user == null)
             {
-                return;
+                throw new Exception(Constants._noSuchUserExistsError);
+            }
+
+            var group = context.Groups.Where(group => group.Id == groupId);
+
+            if (!group.Any())
+            {
+                throw new Exception(Constants._noSuchGroupExistsError);
             }
 
             var groupMember = context.GroupMembers.Where(member => member.UserId == user.Id && member.GroupId == groupId);
 
             if (groupMember.Any())
             {
-                return;
+                throw new Exception(Constants._userIsAlreadyMemberError);
             }
 
             var invite = new GroupMember(user.Id, groupId);
 
             await context.GroupMembers.AddAsync(invite);
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task RemoveFromGroup(string email, string groupId, string requestorId)
+        {
+            var userToRemove = context.Users.Where(user => user.Email == email).FirstOrDefault();
+
+            if (userToRemove == null)
+            {
+                throw new Exception(Constants._noSuchUserExistsError);
+            }
+
+            if (userToRemove.Id == requestorId)
+            {
+                throw new Exception(Constants._cannotRemoveSelfError);
+            }
+
+            var group = context.Groups.Where(group => group.Id == groupId);
+
+            if (!group.Any())
+            {
+                throw new Exception(Constants._noSuchGroupExistsError);
+            }
+
+            if (requestorId != group.First().OwnerId)
+            {
+                throw new Exception(Constants._notEnoughPermissionError);
+            }
+
+            var groupMember = context.GroupMembers.Where(member => member.UserId == userToRemove.Id && member.GroupId == groupId);
+
+            if (!groupMember.Any())
+            {
+                throw new Exception(Constants._userIsNotMemberOfGroupError);
+            }
+
+            context.GroupMembers.Remove(groupMember.First());
 
             await context.SaveChangesAsync();
         }

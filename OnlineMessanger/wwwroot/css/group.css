@@ -14,3 +14,17 @@
     background-color: blue;
     color: white;
 }
+
+.invite-user-button {
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: blue;
+    color: white;
+}
+
+.remove-user-button {
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: darkred;
+    color: white;
+}
