@@ -11,10 +11,13 @@
 
 <div class="context-menu">
     <div class="context-menu__editbtn">Edit</div>
-    <div class="context-menu__replybtn">Reply</div>
     <div class="context-menu__divider"></div>
     <div class="context-menu__delbtn">Delete for self</div>
     <div class="context-menu__delforevrbtn">Delete for everyone</div>
+</div>
+
+<div class="context-menu" id="reply-menu">
+    <div class="context-menu__replybtn">Reply</div>
 </div>
 
 @using (Html.BeginForm("LoadNewMessages", "Group"))
@@ -59,29 +62,49 @@
                     <p id="@message.Message.Id">
                         @message.Message.Contents
                     </p>
+
+                    @if (message.ReplyTo != null)
+                    {
+                        <b id="@message.Message.Id">In reply to:</b>
+                        <div class="message-item" id="@message.Message.Id">
+
+                            <b id="@message.Message.Id">@message.ReplyTo.ReplyToMessageId</b>
+
+                            <b id="@message.Message.Id">@message.ReplyTo.Created</b>
+
+                            @if (message.ReplyTo.IsEdited == true)
+                            {
+                                <b id="@message.Message.Id">(Edited)</b>
+                            }
+
+                            <p id="@message.Message.Id">
+                                @message.ReplyTo.Contents
+                            </p>
+                        </div>
+                    }
                 </li>
             }
             else
             {
-                <li class="message-item">
+                <li class="message-item" oncontextmenu="configureReplyMenu(event)" id="@message.Message.Id">
 
                     @if (groupOwner == message.Message.OwnerId)
                     {
-                        <b>@message.OwnerName (Owner)</b>
+                        <b id="@message.Message.Id">@message.OwnerName (Owner)</b>
                     }
                     else
                     {
-                        <b>@message.OwnerName</b>
+                        <b id="@message.Message.Id">@message.OwnerName</b>
                     }
 
-                    <b>@message.Message.Created</b>
+                    <b id="@message.Message.Id">@message.Message.Created</b>
 
                     @if (message.Message.IsEdited == true)
                     {
-                        <b>(Edited)</b>
+                        <b id="@message.Message.Id">(Edited)</b>
                     }
 
-                    <p>
+                    <p id="@message.Message.Id">
                         @message.Message.Contents
                     </p>
                 </li>
@@ -90,7 +113,7 @@
     </ul>
 }
 
-@using (Html.BeginForm("SendMessage", "Group", FormMethod.Post))
+@using (Html.BeginForm("MessageHandler", "Group", FormMethod.Post))
 {
     <div class="message-menu" id="message-menu">
         <textarea placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"
@@ -141,6 +164,10 @@
 
     const contextMenu = document.querySelector('.context-menu');
 
+    const replyMenu = document.getElementById('reply-menu');
+
+    const replyButton = document.querySelector('.context-menu__replybtn');
+
     const sendMessageMenu = document.querySelector('.message-menu');
 
     const inviteForm = document.querySelector('.universal-form');
@@ -185,6 +212,10 @@
         contextMenu.style.display = show ? 'block' : 'none';
     }
 
+    function showReplyMenu(show = true) {
+        replyMenu.style.display = show ? 'block' : 'none';
+    }
+
     function showSendMessageMenu(show = true) {
         sendMessageMenu.style.display = show ? 'inline-block' : 'none';
     }
@@ -195,6 +226,10 @@
 
     function showInviteForm(show = true) {
         inviteForm.style.display = show ? 'table' : 'none';
+
+        if (!show) {
+            manageUsersFormInput.value = null;
+        }
     }
 
     function showErrorNotification(show = true) {
@@ -203,11 +238,26 @@
 
     function configureContextMenu(event) {
 
+        showReplyMenu(false);
+
         showContextMenu();
 
         contextMenu.style.top = event.pageY + "px";
 
         contextMenu.style.left = event.pageX + "px";
+
+        currentMessageId = event.target.id;
+    }
+
+    function configureReplyMenu(event) {
+
+        showContextMenu(false);
+
+        showReplyMenu();
+
+        replyMenu.style.top = event.pageY + "px";
+
+        replyMenu.style.left = event.pageX + "px";
 
         currentMessageId = event.target.id;
     }
@@ -222,6 +272,7 @@
 
     window.addEventListener('click', () => {
         showContextMenu(false);
+        showReplyMenu(false);
     });
 
     editMessageButton.addEventListener('click', () => {
@@ -297,38 +348,51 @@
                 alert('Success!');
 
                 showInviteForm(false);
-
-                manageUsersFormInput.value = null;
             }
         });
     });
 
-    removeUserButton.addEventListener('click', () => {
+    replyButton.addEventListener('click', () => {
 
         saveScroll();
 
         $.ajax({
             type: 'POST',
-            url: '@Url.Action("RemoveMember","Group")',
+            url: '@Url.Action("SetReplyMode","Group")',
             data: {
-                'email': manageUsersFormInput.value
+                'messageId': currentMessageId
             }
-        }).done((error) => {
+        }).done(() => {
 
-            if (error) {
-
-                errorNotification.innerHTML = error;
-
-                showErrorNotification();
-            } else {
-
-                alert('Success!');
-
-                showInviteForm(false);
-
-                manageUsersFormInput.value = null;
-            }
         });
     });
+
+    if (removeUserButton != null) {
+        removeUserButton.addEventListener('click', () => {
+
+            saveScroll();
+
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("RemoveMember","Group")',
+                data: {
+                    'email': manageUsersFormInput.value
+                }
+            }).done((error) => {
+
+                if (error) {
+
+                    errorNotification.innerHTML = error;
+
+                    showErrorNotification();
+                } else {
+
+                    alert('Success!');
+
+                    showInviteForm(false);
+                }
+            });
+        });
+    }
 
 </script>

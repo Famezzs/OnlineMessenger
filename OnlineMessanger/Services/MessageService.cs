@@ -93,7 +93,7 @@ namespace OnlineMessanger.Services
         {
             var messages = new List<MessageRepresentation>();
 
-            var fields = $"Id, OwnerId, ChannelId, Contents, Created, IsEdited, IsDeletedForSelf";
+            var fields = $"Id, OwnerId, ChannelId, Contents, Created, IsEdited, IsDeletedForSelf, ReplyToMessageId";
 
             var source = "dbo.Messages";
 
@@ -117,11 +117,13 @@ namespace OnlineMessanger.Services
 
                 var createdOn = (DateTime)sqlReader["Created"];
 
+                var replyToMessageId = sqlReader["ReplyToMessageId"] as string;
+
                 var isEdited = (bool)sqlReader["IsEdited"];
 
                 var isDeletedForSelf = (bool)sqlReader["IsDeletedForSelf"];
 
-                var message = new Message(id, ownerId, messageChannelId, contents, createdOn, isEdited, isDeletedForSelf);
+                var message = new Message(id, ownerId, messageChannelId, contents, createdOn, replyToMessageId, isEdited, isDeletedForSelf);
 
                 var author = await context.Users.FindAsync(ownerId);
 
@@ -131,6 +133,60 @@ namespace OnlineMessanger.Services
             messages.Reverse();
 
             return messages;
+        }
+
+        public async Task<List<MessageRepresentation>> GetMessagesWithRepliesByChannelId(string channelId, int messageLimit, int messageOffset)
+        {
+            var messageRepresentations = await GetMessagesByChannelId(channelId, messageLimit, messageOffset);
+
+            var replyIds = new HashSet<string>();
+
+            foreach (var messageRepresentation in messageRepresentations)
+            {
+                if (messageRepresentation.Message.ReplyToMessageId != null)
+                {
+                    replyIds.Add(messageRepresentation.Message.ReplyToMessageId);
+                }
+            }
+
+            var replies = context.Messages.Where(message => replyIds.Contains(message.Id));
+
+            foreach (var reply in replies)
+            {
+                var owner = await context.Users.FindAsync(reply.OwnerId);
+
+                if (owner != null)
+                {
+                    reply.ReplyToMessageId = owner.Email;
+                }
+            }
+
+            if (!replies.Any())
+            {
+                return messageRepresentations;
+            }
+
+            var repliesWithIds = new Dictionary<string, Message>();
+
+            foreach (var reply in replies)
+            {
+                repliesWithIds[reply.Id] = reply;
+            }
+
+            foreach (var messageRepresentation in messageRepresentations)
+            {
+                if (messageRepresentation.Message.ReplyToMessageId != null)
+                {
+                    repliesWithIds.TryGetValue(messageRepresentation.Message.ReplyToMessageId, out var reply);
+
+                    if (reply != null)
+                    {
+                        messageRepresentation.ReplyTo = reply;
+                    }
+                }
+            }
+
+            return messageRepresentations;
         }
 
         public async Task<bool> IsUserOwnerOfMessage(string userId, string messageId)

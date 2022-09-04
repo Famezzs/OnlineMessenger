@@ -101,7 +101,7 @@ namespace OnlineMessanger.Controllers
             var groupId = HttpContext.Session.GetString("GroupId");
 
             var messages = await new MessageService(_context!)
-                .GetMessagesByChannelId(groupId!, _defaultMessageLimit, _defaultMessageOffset);
+                .GetMessagesWithRepliesByChannelId(groupId!, _defaultMessageLimit, _defaultMessageOffset);
 
             if (_groupMessages == null)
             {
@@ -115,6 +115,21 @@ namespace OnlineMessanger.Controllers
             _defaultMessageOffset += messages.Count;
 
             return View("Group", _groupMessages);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MessageHandler(string messageString)
+        {
+            var isReplyMode = HttpContext.Session.GetString("IsReplyMode");
+
+            if (String.IsNullOrWhiteSpace(isReplyMode))
+            {
+                return await SendMessage(messageString);
+            }
+            else
+            {
+                return await ReplyToMessage(messageString);
+            }
         }
 
         [HttpPost]
@@ -148,9 +163,55 @@ namespace OnlineMessanger.Controllers
 
             var message = new Message(_userId!, groupId!, cleanMessage, DateTime.Now);
 
-            await _context!.Messages!.AddAsync(message);
+            await new MessageService(_context!).SaveMessage(message);
 
-            await _context.SaveChangesAsync();
+            return RedirectToAction("ViewGroup", "Group");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ReplyToMessage(string messageString)
+        {
+            if (!ValidateSession())
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var messageToReplyId = HttpContext.Session.GetString("MessageReplyId");
+
+            if (String.IsNullOrEmpty(messageString) ||
+                String.IsNullOrEmpty(messageToReplyId))
+            {
+                return View("Group", _groupMessages);
+            }
+
+            var messageToReplyTo = _context!.Messages.Where(message => message.Id == messageToReplyId);
+
+            if (!messageToReplyId.Any())
+            {
+                return View("Group", _groupMessages);
+            }
+
+            var cleanMessage = TagCleaner.CleanUp(messageString);
+
+            if (String.IsNullOrEmpty(cleanMessage))
+            {
+                return View("Group", _groupMessages);
+            }
+
+            var groupId = HttpContext.Session.GetString("GroupId");
+
+            var isUserMemberOfGroup = new GroupService(_context!).HasAccessToGroup(_userId!, groupId!);
+
+            if (!isUserMemberOfGroup)
+            {
+                return RedirectIfUnauthorized();
+            }
+
+            var message = new Message(_userId!, groupId!, cleanMessage, DateTime.Now, messageToReplyId);
+
+            await new MessageService(_context!).SaveMessage(message);
+
+            HttpContext.Session.SetString("IsReplyMode", "");
 
             return RedirectToAction("ViewGroup", "Group");
         }
@@ -237,6 +298,14 @@ namespace OnlineMessanger.Controllers
             HttpContext.Session.SetString("MessageId", messageId);
 
             return _groupMessages!.Find(message => message.Message.Id == messageId)!.Message.Contents;
+        }
+
+        [HttpPost]
+        public void SetReplyMode(string messageId)
+        {
+            HttpContext.Session.SetString("MessageReplyId", messageId);
+
+            HttpContext.Session.SetString("IsReplyMode", "true");
         }
 
         private bool ValidateSession()
