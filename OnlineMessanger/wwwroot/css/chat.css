@@ -15,12 +15,18 @@
 
 .message-menu {
     position: fixed;
-    height: 30px;
     left: 50%;
     bottom: 8%;
     transform: translateX(-50%);
     display: inline;
     white-space: nowrap;
+    border: 1px solid black;
+    background-color: white;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 15px;
 }
 
     .message-menu textarea {
@@ -42,12 +48,18 @@
 
 .edit-message-menu {
     position: fixed;
-    height: 30px;
     left: 50%;
     bottom: 8%;
     transform: translateX(-50%);
     display: none;
     white-space: nowrap;
+    border: 1px solid black;
+    background-color: white;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 30px;
+    padding-right: 30px;
+    border-radius: 15px;
 }
 
     .edit-message-menu textarea {
@@ -60,7 +72,7 @@
         float: left;
     }
 
-    .edit-message-menu label {
+    .edit-message-menu span {
         margin-left: 10px;
         display: inline-block;
         text-align: right;
