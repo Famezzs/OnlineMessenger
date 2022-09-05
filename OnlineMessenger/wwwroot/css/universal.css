@@ -1,0 +1,90 @@
+﻿.universal-form {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid #aaaaaa;
+    border-radius: 10px;
+    width: 350px;
+    padding: 20px;
+}
+
+.universal-form-fields {
+    display: table;
+}
+
+.universal-form button {
+    display: block;
+    width: 150px;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid black;
+    border-radius: 3px;
+}
+
+.universal-form p {
+    display: inline;
+}
+
+    .universal-field p {
+        float: left;
+        margin: 5px 0;
+        padding-right: 15px;
+    }
+
+    .universal-field input {
+        width: 190px;
+        float: right;
+        margin: 5px 0;
+    }
+
+    .universal-field textarea {
+        width: 190px;
+        float: right;
+        margin: 5px 0;
+        resize: none;
+    }
+
+    .universal-field {
+        clear: both;
+    }
+
+.universal-error-message {
+    background-color: #bd0000;
+    color: white;
+    margin-top: 20px;
+    border-radius: 3px;
+    padding: 5px;
+    text-align: center;
+}
+
+.close-button {
+    position: absolute;
+    right: 32px;
+    top: 32px;
+    width: 32px;
+    height: 32px;
+    opacity: 0.3;
+}
+
+    .close-button:hover {
+        opacity: 1;
+    }
+
+    .close-button:before, .close-button:after {
+        position: absolute;
+        left: 15px;
+        content: ' ';
+        height: 33px;
+        width: 2px;
+        background-color: #333;
+    }
+
+    .close-button:before {
+        transform: rotate(45deg);
+    }
+
+    .close-button:after {
+        transform: rotate(-45deg);
+    }

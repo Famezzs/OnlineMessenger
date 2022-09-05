@@ -1,0 +1,32 @@
+﻿@model Login
+@{
+    ViewData["Title"] = "Login";
+}
+
+@using (Html.BeginForm("Login", "Authenticate", FormMethod.Post))
+{
+    <div class="universal-form">
+
+        <div class="universal-form-fields">
+
+            <div class="universal-field">
+                <p>Email *</p>
+                @Html.TextBoxFor(model => model.Email)
+            </div>
+
+            <div class="universal-field">
+                <p>Password *</p>
+                @Html.PasswordFor(model => model.Password)
+            </div>
+        </div>
+
+        <button type="submit">Submit</button>
+
+        @if(TempData["Error"] != null)
+        {
+            <div class="universal-error-message">
+                @TempData["Error"]
+            </div>
+        }
+    </div>
+}

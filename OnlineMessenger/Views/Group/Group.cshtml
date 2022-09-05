@@ -1,0 +1,202 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Http;
+@model List<MessageRepresentation>
+
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    string? groupOwner = HttpContextAccessor.HttpContext!.Session.GetString("GroupOwner");
+
+    string? groupName = HttpContextAccessor.HttpContext!.Session.GetString("GroupName");
+
+    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+}
+
+<div class="context-menu">
+    <div class="context-menu__editbtn" data-request-url="@Url.Action("SetMessageId","Group")">Edit</div>
+    <div class="context-menu__divider"></div>
+    <div class="context-menu__delbtn" data-request-url="@Url.Action("DeleteMessageForSelf","Group")">Delete for self</div>
+    <div class="context-menu__delforevrbtn" data-request-url="@Url.Action("DeleteMessage","Group")">Delete for everyone</div>
+</div>
+
+@if (!String.IsNullOrWhiteSpace(groupName))
+{
+    <div style="height: 100px">
+        <h2 class="text-center">@groupName</h2>
+    </div>
+}
+
+<div class="context-menu" id="reply-menu">
+    <div class="context-menu__replybtn" id="reply" data-request-url="@Url.Action("SetReplyMode","Group")">Reply</div>
+    <div class="context-menu__replybtn" id="reply-privately" data-request-url="@Url.Action("SetReplyMode","Group")">Reply Privately</div>
+</div>
+
+<div class="universal-form" style="display: none; background-color: white;" data-request-url="@Url.Action("GetMembersOfGroup", "Group")">
+
+    <div class="close-button" id="close-manage-users-menu"></div>
+
+    <p>
+        <b>Member list:</b>
+    </p>
+
+    <div class="universal-form-fields" id="member-list">
+    </div>
+
+    <div style="display: block; height: 30px;"></div>
+
+    <div class="universal-form-fields">
+        <div class="universal-field">
+            <p>User's Email *</p>
+            <input type="text" name="email" id="manage-users-input">
+        </div>
+    </div>
+
+    <button type="button" class="invite-user-button" id="invite-submit-button" data-request-url="@Url.Action("Invite","Group")">Invite</button>
+
+    @if (userId == groupOwner)
+    {
+        <button type="button" class="remove-user-button" id="remove-member-submit-button" data-request-url="@Url.Action("RemoveMember","Group")">Remove</button>
+    }
+
+    <div class="universal-error-message" style="display: none">
+    </div>
+</div>
+
+@using (Html.BeginForm("LoadNewMessages", "Group"))
+{
+    <div class="centered-div">
+        <input type="submit" value="Load older messages" title="Load older messages" onclick="saveScroll()" />
+        <button type="button" class="manage-users-button">Manage Users</button>
+    </div>
+}
+
+@if (Model != null)
+{
+    <ul style="list-style-type: none">
+        @foreach (var message in Model)
+        {
+            @if (message.Message.IsDeletedForSelf &&
+           message.Message.OwnerId == userId)
+            {
+                continue;
+            }
+
+            @if (message.Message.OwnerId == userId)
+            {
+                <li class="message-item" oncontextmenu="configureContextMenu(event)" id="@message.Message.Id">
+
+                    @if (groupOwner == userId)
+                    {
+                        <b id="@message.Message.Id">@message.OwnerName (Owner) (you)</b>
+                    }
+                    else
+                    {
+                        <b id="@message.Message.Id">@message.OwnerName (you)</b>
+                    }
+
+                    <b id="@message.Message.Id">@message.Message.Created</b>
+
+                    @if (message.Message.IsEdited == true)
+                    {
+                        <b id="@message.Message.Id">(Edited)</b>
+                    }
+
+                    <p id="@message.Message.Id">
+                        @message.Message.Contents
+                    </p>
+
+                    @if (message.ReplyTo != null)
+                    {
+                        <b id="@message.Message.Id">In reply to:</b>
+                        <div class="message-item" id="@message.Message.Id">
+
+                            <b id="@message.Message.Id">@message.ReplyTo.ReplyToMessageId</b>
+
+                            <b id="@message.Message.Id">@message.ReplyTo.Created</b>
+
+                            @if (message.ReplyTo.IsEdited == true)
+                            {
+                                <b id="@message.Message.Id">(Edited)</b>
+                            }
+
+                            <p id="@message.Message.Id">
+                                @message.ReplyTo.Contents
+                            </p>
+                        </div>
+                    }
+                </li>
+            }
+            else
+            {
+                <li class="message-item" oncontextmenu="configureReplyMenu(event)" id="@message.Message.Id">
+
+                    @if (groupOwner == message.Message.OwnerId)
+                    {
+                        <b id="@message.Message.Id">@message.OwnerName (Owner)</b>
+                    }
+                    else
+                    {
+                        <b id="@message.Message.Id">@message.OwnerName</b>
+                    }
+
+                    <b id="@message.Message.Id">@message.Message.Created</b>
+
+                    @if (message.Message.IsEdited == true)
+                    {
+                        <b id="@message.Message.Id">(Edited)</b>
+                    }
+
+                    <p id="@message.Message.Id">
+                        @message.Message.Contents
+                    </p>
+
+                    @if (message.ReplyTo != null)
+                    {
+                        <b id="@message.Message.Id">In reply to:</b>
+                        <div class="message-item" id="@message.Message.Id">
+
+                            <b id="@message.Message.Id">@message.ReplyTo.ReplyToMessageId</b>
+
+                            <b id="@message.Message.Id">@message.ReplyTo.Created</b>
+
+                            @if (message.ReplyTo.IsEdited == true)
+                            {
+                                <b id="@message.Message.Id">(Edited)</b>
+                            }
+
+                            <p id="@message.Message.Id">
+                                @message.ReplyTo.Contents
+                            </p>
+                        </div>
+                    }
+                </li>
+            }
+        }
+    </ul>
+}
+
+<div style="height: 150px; margin-bottom: 40px;"></div>
+
+@using (Html.BeginForm("MessageHandler", "Group", FormMethod.Post))
+{
+    <div class="message-menu" id="message-menu">
+        <textarea placeholder="Enter your message" value="@ViewData["Message"]" name="messageString"
+              oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
+        <span>
+            <input type="submit" value="Send" title="Send" onclick="saveScroll()" id="message-menu-submit" />
+            <button type="button" class="refresh-button" onclick="refreshMessages()">Refresh</button>
+        </span>
+    </div>
+}
+
+@using (Html.BeginForm("EditMessage", "Group", FormMethod.Post))
+{
+    <div class="edit-message-menu" id="edit-message-menu">
+        <textarea value="@ViewData["EditMessage"]" name="newContents" id="edit-message-input"
+              oninput='this.style.height = "";this.style.height = this.scrollHeight + "px"'></textarea>
+        <span>
+            <input type="submit" value="Confirm" title="Confirm" onclick="saveScroll()" />
+        </span>
+    </div>
+}
+
+<script src="~/js/group.js"></script>

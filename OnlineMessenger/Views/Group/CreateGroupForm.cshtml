@@ -1,0 +1,37 @@
+﻿@model Group
+@{
+    ViewData["Title"] = "Create Group";
+}
+
+@using (Html.BeginForm("CreateGroup", "Group", FormMethod.Post))
+{
+    <div class="universal-form">
+
+        <div class="universal-form-fields">
+            <div class="universal-field">
+                <p>Name *</p>
+                @Html.TextBoxFor(model => model.Name)
+            </div>
+
+            <div class="universal-field">
+                <p>Details</p>
+                @Html.TextAreaFor(model => model.Description)
+            </div>
+
+            <div class="universal-field">
+                <p>Image Url</p>
+                @Html.TextBoxFor(model => model.ImageUrl)
+            </div>
+
+        </div>
+
+        <button type="submit">Submit</button>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="universal-error-message">
+                @TempData["Error"]
+            </div>
+        }
+    </div>
+}
