@@ -13,7 +13,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddAzureKeyVault(
-    new Uri(builder.Configuration["VaultName"]),
+    new Uri(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")),
     new DefaultAzureCredential());
 
 builder.Services.AddControllersWithViews();
@@ -21,7 +21,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 builder.Services.AddDbContext<MessangerDataContext>(options =>
-    options.UseSqlServer(builder.Configuration["DefaultConnection"]),
+    options.UseSqlServer(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")),
     ServiceLifetime.Singleton);
 
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -51,15 +51,15 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidAudience = builder.Configuration["ValidAudience"],
-            ValidIssuer = builder.Configuration["ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Secret"]))
+            ValidAudience = Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"),
+            ValidIssuer = Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")))
         };
     });
 
-_ = TokenCredentials.GetInstance(key: builder.Configuration["Secret"],
-            issuer: builder.Configuration["ValidIssuer"],
-            audience: builder.Configuration["ValidAudience"]);
+_ = TokenCredentials.GetInstance(key: Environment.GetEnvironmentVariable("JWT_SECRET"),
+            issuer: Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
+            audience: Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"));
 
 _ = ConnectionStrings.GetInstance(builder.Configuration.GetConnectionString("DefaultConnection"));
 
