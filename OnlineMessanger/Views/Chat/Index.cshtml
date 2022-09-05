@@ -16,27 +16,11 @@
         </div>
     }
 
-    <div class="item" title="New Chat">
+    <div class="item" title="New Chat" id="add-new-chat" data-request-url="@Url.Action("SetChatId","Chat")">
         <img src="~/css/icons/add-chat-icon.png" runat="server"
          style="width: 100px; height: 100px;" onclick="redirectToChatCreate()" />
         <span class="caption">Add Chat</span>
     </div>
 }
 
-<script>
-    function redirectToChatCreate() {
-        window.location.href = window.location.href + '/CreateChatForm'
-    }
-
-    function setChatId(chatId) {
-        $.ajax({
-            type: 'POST',
-            url: '@Url.Action("SetChatId","Chat")',
-            data: {
-                'chatId': chatId
-            }
-        }).done(function(e) {
-            window.location.href = window.location.href + '/ViewChat'
-        })
-    }
-</script>
+<script src="~/js/index-chat.js"></script>

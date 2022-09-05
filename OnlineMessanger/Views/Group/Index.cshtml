@@ -27,27 +27,11 @@
         </div>
     }
 
-    <div class="item" title="New Group">
+    <div class="item" title="New Group" id="add-new-group" data-request-url="@Url.Action("SetGroupId","Group")">
         <img src="~/css/icons/add-chat-icon.png" runat="server"
          style="width: 100px; height: 100px;" onclick="redirectToGroupCreate()" />
         <span class="caption">Add Group</span>
     </div>
 }
 
-<script>
-    function redirectToGroupCreate() {
-        window.location.href = window.location.href + '/CreateGroupForm'
-    }
-
-    function setGroupId(groupId) {
-        $.ajax({
-            type: 'POST',
-            url: '@Url.Action("SetGroupId","Group")',
-            data: {
-                'groupId': groupId
-            }
-        }).done(function(e) {
-            window.location.href = window.location.href + '/ViewGroup'
-        })
-    }
-</script>
+<script src="~/js/index-group.js"></script>

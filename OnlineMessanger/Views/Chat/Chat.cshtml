@@ -1,5 +1,4 @@
 ﻿@using System.Security.Claims
-@model List<MessageRepresentation>
 @inject IHttpContextAccessor HttpContextAccessor
 @{
     string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -7,11 +6,13 @@
     string? chatName = HttpContextAccessor.HttpContext!.Session.GetString("ChatName");
 }
 
+@model List<MessageRepresentation>
+
 <div class="context-menu">
-    <div class="context-menu__editbtn">Edit</div>
+    <div class="context-menu__editbtn" data-request-url="@Url.Action("SetMessageId","Chat")">Edit</div>
     <div class="context-menu__divider"></div>
-    <div class="context-menu__delbtn">Delete for self</div>
-    <div class="context-menu__delforevrbtn">Delete for everyone</div>
+    <div class="context-menu__delbtn" data-request-url="@Url.Action("DeleteMessageForSelf","Chat")">Delete for self</div>
+    <div class="context-menu__delforevrbtn" data-request-url="@Url.Action("DeleteMessage","Chat")">Delete for everyone</div>
 </div>
 
 @if (!String.IsNullOrWhiteSpace(chatName))
@@ -142,125 +143,4 @@
     </div>
 }
 
-<script>
-
-    let scrollPosition = window.sessionStorage.getItem("sidebar-scroll");
-
-    let currentMessageId = "";
-
-    const contextMenu = document.querySelector('.context-menu');
-
-    const sendMessageMenu = document.querySelector('.message-menu');
-
-    const editMessageMenu = document.querySelector('.edit-message-menu');
-
-    const editMessageButton = document.querySelector('.context-menu__editbtn');
-
-    const editMessageInput = document.getElementById('edit-message-input');
-
-    const deleteForAllButton = document.querySelector('.context-menu__delforevrbtn');
-
-    const deleteForSelfButton = document.querySelector('.context-menu__delbtn');
-
-    function saveScroll() {
-        window.sessionStorage.setItem("sidebar-scroll", window.scrollY);
-    }
-
-    if (scrollPosition !== null) {
-        autoScrollTo(scrollPosition);
-    }
-
-    function autoScrollTo(scrollPosition) {
-
-        document.documentElement.style.scrollBehavior = 'auto';
-
-        setTimeout(() => window.scrollTo(0, scrollPosition), 5);
-        setTimeout(() => document.documentElement.style.scrollBehavior = 'smooth', 5);
-    }
-
-    function showContextMenu(show = true) {
-        contextMenu.style.display = show ? 'block' : 'none';
-    }
-
-    function showSendMessageMenu(show = true) {
-        sendMessageMenu.style.display = show ? 'block' : 'none';
-    }
-
-    function showEditMessageMenu(show = true) {
-        editMessageMenu.style.display = show ? 'block' : 'none';
-    }
-
-    function configureContextMenu(event) {
-
-        showContextMenu();
-
-        contextMenu.style.top = event.pageY + "px";
-
-        contextMenu.style.left = event.pageX + "px";
-
-        currentMessageId = event.target.id;
-    }
-
-    function refreshMessages() {
-
-        saveScroll();
-
-        location.reload();
-    }
-
-    window.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-    });
-
-    window.addEventListener('click', () => {
-        showContextMenu(false);
-    });
-
-    editMessageButton.addEventListener('click', () => {
-
-        $.ajax({
-            type: 'POST',
-            url: '@Url.Action("SetMessageId","Chat")',
-            data: {
-                'messageId': currentMessageId
-            }
-        }).done((result) => {
-            showSendMessageMenu(false);
-
-            editMessageInput.value = result;
-
-            showEditMessageMenu(true);
-        });
-    })
-
-    deleteForAllButton.addEventListener('click', () => {
-
-        saveScroll();
-
-        $.ajax({
-            type: 'POST',
-            url: '@Url.Action("DeleteMessage","Chat")',
-            data: {
-                'messageId': currentMessageId
-            }
-        }).done(() => {
-            refreshMessages();
-        });
-    });
-
-    deleteForSelfButton.addEventListener('click', () => {
-
-        saveScroll();
-
-        $.ajax({
-            type: 'POST',
-            url: '@Url.Action("DeleteMessageForSelf","Chat")',
-            data: {
-                'messageId': currentMessageId
-            }
-        }).done(() => {
-            refreshMessages();
-        });
-    })
-
-</script>
+<script src="~/js/chat.js"></script>
