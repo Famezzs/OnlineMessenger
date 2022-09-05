@@ -61,7 +61,7 @@ _ = TokenCredentials.GetInstance(key: Environment.GetEnvironmentVariable("JWT_SE
             issuer: Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
             audience: Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"));
 
-_ = ConnectionStrings.GetInstance(builder.Configuration.GetConnectionString("DefaultConnection"));
+_ = ConnectionStrings.GetInstance(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION"));
 
 var app = builder.Build();
 
