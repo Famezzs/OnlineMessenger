@@ -1,7 +1,10 @@
+using Azure.Identity;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
 using OnlineMessanger.Helpers;
 using OnlineMessanger.Models;
 
@@ -9,12 +12,16 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddAzureKeyVault(
+    new Uri(builder.Configuration["VaultName"]),
+    new DefaultAzureCredential());
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
-builder.Services.AddDbContext<MessangerDataContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")),
+builder.Services.AddDbContext<MessangerDataContext>(options =>
+    options.UseSqlServer(builder.Configuration["DefaultConnection"]),
     ServiceLifetime.Singleton);
 
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -44,15 +51,15 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidAudience = builder.Configuration["JWT:ValidAudience"],
-            ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+            ValidAudience = builder.Configuration["ValidAudience"],
+            ValidIssuer = builder.Configuration["ValidIssuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Secret"]))
         };
     });
 
-_ = TokenCredentials.GetInstance(key: builder.Configuration["JWT:Secret"],
-            issuer: builder.Configuration["JWT:ValidIssuer"],
-            audience: builder.Configuration["JWT:ValidAudience"]);
+_ = TokenCredentials.GetInstance(key: builder.Configuration["Secret"],
+            issuer: builder.Configuration["ValidIssuer"],
+            audience: builder.Configuration["ValidAudience"]);
 
 _ = ConnectionStrings.GetInstance(builder.Configuration.GetConnectionString("DefaultConnection"));
 
