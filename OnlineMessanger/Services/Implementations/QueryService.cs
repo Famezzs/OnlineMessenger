@@ -1,6 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
-
-using OnlineMessanger.Helpers;
+using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Services.Interfaces;
 
 namespace OnlineMessanger.Services.Implementations

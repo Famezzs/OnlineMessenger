@@ -3,8 +3,7 @@ using System.Security.Claims;
 using System.Text;
 
 using Microsoft.IdentityModel.Tokens;
-
-using OnlineMessanger.Helpers;
+using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Models;
 using OnlineMessanger.Services.Interfaces;
 

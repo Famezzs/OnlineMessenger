@@ -9,6 +9,7 @@ namespace OnlineMessanger.Services.Interfaces
         public Task DeleteMessage(string userId, string messageId);
         public Task DeleteMessageForSelf(string userId, string messageId);
         public Task<List<MessageRepresentation>> GetMessagesByChannelId(string channelId, int messageLimit, int messageOffset);
+        Task<List<MessageRepresentation>> GetMessagesWithRepliesByChannelId(string channelId, int messageLimit, int messageOffset);
         public Task<bool> IsUserOwnerOfMessage(string userId, string messageId);
     }
 }

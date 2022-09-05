@@ -1,4 +1,4 @@
-﻿namespace OnlineMessanger.Helpers
+﻿namespace OnlineMessanger.Helpers.Constants
 {
     public class ConnectionStrings
     {

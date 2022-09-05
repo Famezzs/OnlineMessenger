@@ -90,9 +90,9 @@ namespace OnlineMessanger.Services.Implementations
 
         public async Task InviteToGroup(string email, string groupId)
         {
-            var user = context.Users.Where(user => user.Email == email);
+            var user = await new UserService().FindUserByEmail(email);
 
-            if (!user.Any())
+            if (user == null)
             {
                 throw new Exception(Constants._noSuchUserExistsError);
             }
@@ -104,14 +104,14 @@ namespace OnlineMessanger.Services.Implementations
                 throw new Exception(Constants._noSuchGroupExistsError);
             }
 
-            var groupMember = context.GroupMembers.Where(member => member.UserId == user.First().Id && member.GroupId == groupId);
+            var groupMember = context.GroupMembers.Where(member => member.UserId == user.Id && member.GroupId == groupId);
 
             if (groupMember.Any())
             {
                 throw new Exception(Constants._userIsAlreadyMemberError);
             }
 
-            var invite = new GroupMember(user.First().Id, groupId);
+            var invite = new GroupMember(user.Id, groupId);
 
             await context.GroupMembers.AddAsync(invite);
 
@@ -120,14 +120,14 @@ namespace OnlineMessanger.Services.Implementations
 
         public async Task RemoveFromGroup(string email, string groupId, string requestorId)
         {
-            var userToRemove = context.Users.Where(user => user.Email == email);
+            var userToRemove = await new UserService().FindUserByEmail(email);
 
-            if (!userToRemove.Any())
+            if (userToRemove == null)
             {
                 throw new Exception(Constants._noSuchUserExistsError);
             }
 
-            if (userToRemove.First().Id == requestorId)
+            if (userToRemove.Id == requestorId)
             {
                 throw new Exception(Constants._cannotRemoveSelfError);
             }
@@ -144,7 +144,7 @@ namespace OnlineMessanger.Services.Implementations
                 throw new Exception(Constants._notEnoughPermissionError);
             }
 
-            var groupMember = context.GroupMembers.Where(member => member.UserId == userToRemove.First().Id && member.GroupId == groupId);
+            var groupMember = context.GroupMembers.Where(member => member.UserId == userToRemove.Id && member.GroupId == groupId);
 
             if (!groupMember.Any())
             {

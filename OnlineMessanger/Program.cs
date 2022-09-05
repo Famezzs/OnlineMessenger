@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
-using OnlineMessanger.Helpers;
+using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Models;
 
 using System.Text;
@@ -48,17 +47,19 @@ builder.Services.AddAuthentication(options =>
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidAudience = Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"),
-            ValidIssuer = Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!))
+            ValidAudience = builder.Configuration["ValidAudience"],
+            ValidIssuer = builder.Configuration["ValidIssuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Secret"]))
         };
     });
 
-_ = TokenCredentials.GetInstance(key: Environment.GetEnvironmentVariable("JWT_SECRET")!,
-            issuer: Environment.GetEnvironmentVariable("JWT_VALID_ISSUER")!,
-            audience: Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE")!);
+_ = TokenCredentials.GetInstance(
+            key: builder.Configuration["Secret"],
+            issuer: builder.Configuration["ValidIssuer"],
+            audience: builder.Configuration["ValidAudience"]
+            );
 
-_ = ConnectionStrings.GetInstance(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")!);
+_ = ConnectionStrings.GetInstance(builder.Configuration["DefaultConnection"]);
 
 var app = builder.Build();
 

@@ -1,4 +1,4 @@
-﻿namespace OnlineMessanger.Helpers
+﻿namespace OnlineMessanger.Helpers.Constants
 {
     public class TokenCredentials
     {
@@ -54,7 +54,7 @@
             }
         }
 
-        private TokenCredentials(string key, string issuer, string audience) 
+        private TokenCredentials(string key, string issuer, string audience)
         {
             this.key = key;
             this.issuer = issuer;
