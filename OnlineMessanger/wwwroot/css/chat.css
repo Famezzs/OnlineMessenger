@@ -101,6 +101,7 @@
     left: 0;
     display: none;
     width: 200px;
+    z-index: 100;
 }
 
 .context-menu__editbtn {

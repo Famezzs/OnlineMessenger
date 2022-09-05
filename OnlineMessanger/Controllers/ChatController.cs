@@ -93,6 +93,8 @@ namespace OnlineMessanger.Controllers
                 return RedirectIfUnauthorized();
             }
 
+            _userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var doesUserHaveAccessToChat = await new ChatService(_context!).HasAccessToChat(_userId!, chatId);
 
             if (!doesUserHaveAccessToChat)
