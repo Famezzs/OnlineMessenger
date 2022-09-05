@@ -4,7 +4,7 @@
 @{
     string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-    string chatName = HttpContextAccessor.HttpContext.Session.GetString("ChatName");
+    string? chatName = HttpContextAccessor.HttpContext!.Session.GetString("ChatName");
 }
 
 <div class="context-menu">

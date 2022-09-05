@@ -3,9 +3,9 @@
 using System.Security.Claims;
 
 using OnlineMessanger.Models;
-using OnlineMessanger.Services;
 using OnlineMessanger.Helpers;
 using OnlineMessanger.Helpers.Constants;
+using OnlineMessanger.Services.Implementations;
 
 namespace OnlineMessanger.Controllers
 {
@@ -226,8 +226,6 @@ namespace OnlineMessanger.Controllers
             {
                 return;
             }
-
-            var chatName = string.Empty;
 
             if (_userId == userA.Id)
             {

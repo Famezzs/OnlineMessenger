@@ -1,5 +1,4 @@
 using Azure.Identity;
-
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,16 +11,14 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddAzureKeyVault(
-    new Uri(Environment.GetEnvironmentVariable("VAULT_NAME")),
-    new DefaultAzureCredential());
+builder.Configuration.AddAzureKeyVault(new Uri(Environment.GetEnvironmentVariable("VAULT_NAME")!), new DefaultAzureCredential());
 
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 builder.Services.AddDbContext<MessangerDataContext>(options =>
-    options.UseSqlServer(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")),
+    options.UseSqlServer(builder.Configuration["DefaultConnection"]),
     ServiceLifetime.Singleton);
 
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -53,15 +50,15 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidAudience = Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"),
             ValidIssuer = Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!))
         };
     });
 
-_ = TokenCredentials.GetInstance(key: Environment.GetEnvironmentVariable("JWT_SECRET"),
-            issuer: Environment.GetEnvironmentVariable("JWT_VALID_ISSUER"),
-            audience: Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE"));
+_ = TokenCredentials.GetInstance(key: Environment.GetEnvironmentVariable("JWT_SECRET")!,
+            issuer: Environment.GetEnvironmentVariable("JWT_VALID_ISSUER")!,
+            audience: Environment.GetEnvironmentVariable("JWT_VALID_AUDIENCE")!);
 
-_ = ConnectionStrings.GetInstance(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION"));
+_ = ConnectionStrings.GetInstance(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")!);
 
 var app = builder.Build();
 

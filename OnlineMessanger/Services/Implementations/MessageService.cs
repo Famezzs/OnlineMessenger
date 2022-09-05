@@ -2,7 +2,7 @@
 using OnlineMessanger.Models;
 using OnlineMessanger.Services.Interfaces;
 
-namespace OnlineMessanger.Services
+namespace OnlineMessanger.Services.Implementations
 {
     public class MessageService : IMessageService
     {
@@ -60,7 +60,7 @@ namespace OnlineMessanger.Services
                 return;
             }
 
-            if (String.IsNullOrWhiteSpace(contents))
+            if (string.IsNullOrWhiteSpace(contents))
             {
                 return;
             }
@@ -75,7 +75,7 @@ namespace OnlineMessanger.Services
 
             var cleanContents = TagCleaner.CleanUp(contents);
 
-            if (String.IsNullOrWhiteSpace(cleanContents))
+            if (string.IsNullOrWhiteSpace(cleanContents))
             {
                 return;
             }

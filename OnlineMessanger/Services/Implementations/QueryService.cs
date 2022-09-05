@@ -3,7 +3,7 @@
 using OnlineMessanger.Helpers;
 using OnlineMessanger.Services.Interfaces;
 
-namespace OnlineMessanger.Services
+namespace OnlineMessanger.Services.Implementations
 {
     public class QueryService : IQueryService
     {

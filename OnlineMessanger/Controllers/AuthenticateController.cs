@@ -1,12 +1,9 @@
-﻿using System.Security.Claims;
-
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-using OnlineMessanger.Helpers;
 using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Models;
-using OnlineMessanger.Services;
+using OnlineMessanger.Services.Implementations;
 
 namespace OnlineMessanger.Controllers
 {
@@ -20,7 +17,8 @@ namespace OnlineMessanger.Controllers
             if (String.IsNullOrWhiteSpace(model.Email) ||
                 String.IsNullOrWhiteSpace(model.Password))
             {
-                TempData["Error"] = "Please fill in the fields";
+                TempData["Error"] = Constants._requiredFieldsEmptyError;
+
                 return RedirectToAction("Login", "Home");
             }
 
@@ -31,14 +29,13 @@ namespace OnlineMessanger.Controllers
             if (isAuthenticationAttemptValid == false)
             {
                 TempData["Error"] = Constants._loginFailMessage;
+
                 return RedirectToAction("Login", "Home");
             }
 
             var userRoles = await userManager.GetRolesAsync(user!);
 
-            var tokenService = new TokenService();
-
-            var securityToken = tokenService.CreateToken(user!, userRoles, DateTime.Now.AddHours(1));
+            var securityToken = new TokenService().CreateToken(user!, userRoles, DateTime.Now.AddHours(1));
 
             HttpContext.Session.SetString("Token", securityToken);
 
@@ -54,7 +51,8 @@ namespace OnlineMessanger.Controllers
             if (String.IsNullOrWhiteSpace(model.Email) ||
                 String.IsNullOrWhiteSpace(model.Password))
             {
-                TempData["Error"] = "Please fill in the fields";
+                TempData["Error"] = Constants._requiredFieldsEmptyError;
+
                 return RedirectToAction("Register", "Home");
             }
 
@@ -89,17 +87,13 @@ namespace OnlineMessanger.Controllers
             }    
         }
 
-        public AuthenticateController(UserManager<User> userManager, 
-            IConfiguration configuration,
-            SignInManager<User> signInManager)
+        public AuthenticateController(UserManager<User> userManager, SignInManager<User> signInManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
-            _configuration = configuration;
         }
 
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
-        private readonly IConfiguration _configuration;
     }
 }

@@ -8,7 +8,7 @@ using OnlineMessanger.Helpers;
 using OnlineMessanger.Models;
 using OnlineMessanger.Services.Interfaces;
 
-namespace OnlineMessanger.Services
+namespace OnlineMessanger.Services.Implementations
 {
     public class TokenService : ITokenService
     {
@@ -32,7 +32,7 @@ namespace OnlineMessanger.Services
 
             var audience = TokenCredentials.GetAudience();
 
-            var securityToken =  new JwtSecurityToken
+            var securityToken = new JwtSecurityToken
                 (
                     issuer: issuer,
                     audience: audience,
@@ -54,7 +54,7 @@ namespace OnlineMessanger.Services
 
             var audience = TokenCredentials.GetAudience();
 
-            try 
+            try
             {
                 jwtTokenHandler.ValidateToken(token, new TokenValidationParameters
                 {

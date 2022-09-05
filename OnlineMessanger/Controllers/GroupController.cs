@@ -2,10 +2,10 @@
 
 using System.Security.Claims;
 
-using OnlineMessanger.Services;
 using OnlineMessanger.Models;
 using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Helpers;
+using OnlineMessanger.Services.Implementations;
 
 namespace OnlineMessanger.Controllers
 {

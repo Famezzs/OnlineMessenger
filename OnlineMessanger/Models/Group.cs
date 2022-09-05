@@ -1,4 +1,6 @@
-﻿namespace OnlineMessanger.Models
+﻿using OnlineMessanger.Helpers.Constants;
+
+namespace OnlineMessanger.Models
 {
     public class Group
     {
@@ -10,7 +12,10 @@
 
         public Group()
         {
-
+            Name = string.Empty;
+            Description = Constants._defaultGroupDescription;
+            ImageUrl = string.Empty;
+            OwnerId = string.Empty;
         }
 
         public Group(string name, string description, string imageUrl, string ownerId)

@@ -10,7 +10,7 @@ namespace OnlineMessanger.Helpers
     {
         public static JwtSecurityToken Generate(List<Claim> authenticationClaims)
         {
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")));
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET")!));
 
             return new JwtSecurityToken
                 (

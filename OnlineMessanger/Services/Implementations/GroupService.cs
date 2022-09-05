@@ -1,11 +1,9 @@
-﻿using Microsoft.Data.SqlClient;
-
-using OnlineMessanger.Helpers;
+﻿using OnlineMessanger.Helpers;
 using OnlineMessanger.Helpers.Constants;
 using OnlineMessanger.Models;
 using OnlineMessanger.Services.Interfaces;
 
-namespace OnlineMessanger.Services
+namespace OnlineMessanger.Services.Implementations
 {
     public class GroupService : IGroupService
     {
@@ -71,8 +69,7 @@ namespace OnlineMessanger.Services
         {
             var member = context!.GroupMembers!.Where(entry => entry.UserId == userId && entry.GroupId == groupId);
 
-            if (member == null || 
-                !member.Any())
+            if (!member.Any())
             {
                 return false;
             }
@@ -93,9 +90,9 @@ namespace OnlineMessanger.Services
 
         public async Task InviteToGroup(string email, string groupId)
         {
-            var user = context.Users.Where(user => user.Email == email).First();
+            var user = context.Users.Where(user => user.Email == email);
 
-            if (user == null)
+            if (!user.Any())
             {
                 throw new Exception(Constants._noSuchUserExistsError);
             }
@@ -107,14 +104,14 @@ namespace OnlineMessanger.Services
                 throw new Exception(Constants._noSuchGroupExistsError);
             }
 
-            var groupMember = context.GroupMembers.Where(member => member.UserId == user.Id && member.GroupId == groupId);
+            var groupMember = context.GroupMembers.Where(member => member.UserId == user.First().Id && member.GroupId == groupId);
 
             if (groupMember.Any())
             {
                 throw new Exception(Constants._userIsAlreadyMemberError);
             }
 
-            var invite = new GroupMember(user.Id, groupId);
+            var invite = new GroupMember(user.First().Id, groupId);
 
             await context.GroupMembers.AddAsync(invite);
 
@@ -123,14 +120,14 @@ namespace OnlineMessanger.Services
 
         public async Task RemoveFromGroup(string email, string groupId, string requestorId)
         {
-            var userToRemove = context.Users.Where(user => user.Email == email).FirstOrDefault();
+            var userToRemove = context.Users.Where(user => user.Email == email);
 
-            if (userToRemove == null)
+            if (!userToRemove.Any())
             {
                 throw new Exception(Constants._noSuchUserExistsError);
             }
 
-            if (userToRemove.Id == requestorId)
+            if (userToRemove.First().Id == requestorId)
             {
                 throw new Exception(Constants._cannotRemoveSelfError);
             }
@@ -147,7 +144,7 @@ namespace OnlineMessanger.Services
                 throw new Exception(Constants._notEnoughPermissionError);
             }
 
-            var groupMember = context.GroupMembers.Where(member => member.UserId == userToRemove.Id && member.GroupId == groupId);
+            var groupMember = context.GroupMembers.Where(member => member.UserId == userToRemove.First().Id && member.GroupId == groupId);
 
             if (!groupMember.Any())
             {
@@ -160,7 +157,7 @@ namespace OnlineMessanger.Services
         }
         public string GetMembersByGroupId(string groupId)
         {
-            if (String.IsNullOrWhiteSpace(groupId))
+            if (string.IsNullOrWhiteSpace(groupId))
             {
                 return string.Empty;
             }
