@@ -13,7 +13,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddAzureKeyVault(
-    new Uri(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION")),
+    new Uri(Environment.GetEnvironmentVariable("VAULT_NAME")),
     new DefaultAzureCredential());
 
 builder.Services.AddControllersWithViews();

@@ -20,7 +20,7 @@ namespace OnlineMessanger.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+                optionsBuilder.UseSqlServer(Environment.GetEnvironmentVariable("DEFAULT_CONNECTION"));
             }
         }
 
